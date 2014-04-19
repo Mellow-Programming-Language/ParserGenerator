@@ -1,0 +1,7 @@
+To bootstrap:
+
+    dmd grammarParser.d parserGenerator.d grammarNode.d
+    ./grammarParser < grammar2.peg > grammarParser2.d
+    // Remove the terminal nodes from the AST gen in grammarParser2.d
+    dmd grammarParser2.d parserGenerator2.d grammarNode.d
+    ./grammarParser2 < grammar3.peg > grammarParser3.d

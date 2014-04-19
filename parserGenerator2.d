@@ -4,7 +4,7 @@ import std.string;
 import std.array;
 import std.string;
 import grammarNode;
-import grammarParser;
+import grammarParser2;
 
 class GenParser
 {
@@ -212,11 +212,12 @@ private:
     {
         // We should never be passed in a null node
         assert(execNode !is null);
-        // We should always receive a nonterminal
-        assert(cast(ASTNonTerminal)execNode !is null);
     }
     body
     {
+        enum NodeStatus {PRUNED, ELEVATED, NORMAL}
+        static NodeStatus status = NodeStatus.NORMAL;
+        static inOrChain = false;
         // Cast the general ASTNode to a non-terminal node to actually work
         // with
         auto node = cast(ASTNonTerminal)execNode;
@@ -242,12 +243,156 @@ private:
             }
             parserDef.funcs ~= [curFunc];
             break;
-        case "RULESEGMENT":
-            auto segmentNode = cast(ASTNonTerminal)node.children[0];
-            auto segmentType = segmentNode.name;
-            if (segmentType != "RULENAME")
+        case "PRUNEDELEVATEDNORMAL":
+            compile(node.children[0]);
+            break;
+        case "NORMAL":
+            status = NodeStatus.NORMAL;
+            compile(node.children[0]);
+            break;
+        case "PRUNED":
+            status = NodeStatus.PRUNED;
+            compile(node.children[0]);
+            break;
+        case "ELEVATED":
+            status = NodeStatus.ELEVATED;
+            compile(node.children[0]);
+            break;
+        case "RULENAMEWITHOP":
+            auto ruleNameNode = cast(ASTNonTerminal)node.children[0];
+            auto ruleName = (cast(ASTTerminal)(ruleNameNode.children[0])).token;
+            string sequence = "";
+            if (node.children.length > 1)
             {
-                compile(node.children[0]);
+                auto operatorNode = cast(ASTNonTerminal)node.children[1];
+                auto op = (cast(ASTTerminal)(operatorNode.children[0])).token;
+                final switch (op)
+                {
+                case "*":
+                    sequence ~= `        while (` ~ ruleName ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status == NodeStatus.PRUNED)
+                    {
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    }
+                    else if (status == NodeStatus.ELEVATED)
+                    {
+                    sequence ~= `            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    sequence ~= `            foreach (child; tempNode.children)` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    sequence ~= `                stack ~= child;` ~ "\n";
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                    }
+                    else
+                    {
+                    sequence ~= `            collectedNodes++;` ~ "\n";
+                    }
+                    sequence ~= `        }` ~ "\n";
+                    break;
+                case "+":
+                    sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status == NodeStatus.PRUNED)
+                    {
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    }
+                    else if (status == NodeStatus.ELEVATED)
+                    {
+                    sequence ~= `            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    sequence ~= `            foreach (child; tempNode.children)` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    sequence ~= `                stack ~= child;` ~ "\n";
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                    }
+                    else
+                    {
+                    sequence ~= `            collectedNodes++;` ~ "\n";
+                    }
+                    sequence ~= `            while (` ~ ruleName ~ `())` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    if (status == NodeStatus.PRUNED)
+                    {
+                    sequence ~= `                stack = stack[0..$-1];` ~ "\n";
+                    }
+                    else if (status == NodeStatus.ELEVATED)
+                    {
+                    sequence ~= `                tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                    sequence ~= `                stack = stack[0..$-1];` ~ "\n";
+                    sequence ~= `                foreach (child; tempNode.children)` ~ "\n";
+                    sequence ~= `                {` ~ "\n";
+                    sequence ~= `                    stack ~= child;` ~ "\n";
+                    sequence ~= `                }` ~ "\n";
+                    sequence ~= `                collectedNodes += tempNode.children.length;` ~ "\n";
+                    }
+                    else
+                    {
+                    sequence ~= `                collectedNodes++;` ~ "\n";
+                    }
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `        }` ~ "\n";
+                    sequence ~= `        else` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                    sequence ~= `            index = saveIndex;` ~ "\n";
+                    sequence ~= `            return false;` ~ "\n";
+                    sequence ~= `        }` ~ "\n";
+                    break;
+                case "?":
+                    sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status == NodeStatus.PRUNED)
+                    {
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    }
+                    else if (status == NodeStatus.ELEVATED)
+                    {
+                    sequence ~= `            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    sequence ~= `            foreach (child; tempNode.children)` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    sequence ~= `                stack ~= child;` ~ "\n";
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                    }
+                    else
+                    {
+                    sequence ~= `            collectedNodes++;` ~ "\n";
+                    }
+                    sequence ~= `        }` ~ "\n";
+                    break;
+                }
+            }
+            else
+            {
+                sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                if (status == NodeStatus.PRUNED)
+                {
+                sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                }
+                else
+                {
+                sequence ~= `            collectedNodes++;` ~ "\n";
+                }
+                sequence ~= `        }` ~ "\n";
+                sequence ~= `        else` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                sequence ~= `            index = saveIndex;` ~ "\n";
+                sequence ~= `            return false;` ~ "\n";
+                sequence ~= `        }` ~ "\n";
+            }
+            curFunc.sequences ~= [sequence];
+            break;
+        case "TERMINALWITHOP":
+            compile(node.children[0]);
+            if (inOrChain)
+            {
+                break;
             }
             string sequence = "";
             if (node.children.length > 1)
@@ -257,161 +402,67 @@ private:
                 final switch (op)
                 {
                 case "*":
-                    switch (segmentType)
+                    sequence ~= `        while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status != NodeStatus.PRUNED)
                     {
-                    case "TERMINAL":
-                        sequence ~= `        while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "PARENSEGMENT":
-                        sequence ~= `        while (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes += result.collectedNodes;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "RULENAME":
-                        auto ruleName = (cast(ASTTerminal)(segmentNode.children[0])).token;
-                        sequence ~= `        while (` ~ ruleName ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    default:
-                        writeln("Can't handle ", segmentType);
+                    sequence ~= `            collectedNodes++;` ~ "\n";
                     }
+                    sequence ~= `        }` ~ "\n";
                     break;
                 case "+":
-                    switch (segmentType)
+                    sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status != NodeStatus.PRUNED)
                     {
-                    case "TERMINAL":
-                        sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `            while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
-                        sequence ~= `            {` ~ "\n";
-                        sequence ~= `                collectedNodes++;` ~ "\n";
-                        sequence ~= `            }` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        sequence ~= `        else` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                        sequence ~= `            index = saveIndex;` ~ "\n";
-                        sequence ~= `            return false;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "PARENSEGMENT":
-                        sequence ~= `        if (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes += result.collectedNodes;` ~ "\n";
-                        sequence ~= `            while (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                        sequence ~= `            {` ~ "\n";
-                        sequence ~= `                collectedNodes += result.collectedNodes;` ~ "\n";
-                        sequence ~= `            }` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        sequence ~= `        else` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                        sequence ~= `            index = saveIndex;` ~ "\n";
-                        sequence ~= `            return false;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "RULENAME":
-                        auto ruleName = (cast(ASTTerminal)(segmentNode.children[0])).token;
-                        sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `            while (` ~ ruleName ~ `())` ~ "\n";
-                        sequence ~= `            {` ~ "\n";
-                        sequence ~= `                collectedNodes++;` ~ "\n";
-                        sequence ~= `            }` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        sequence ~= `        else` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                        sequence ~= `            index = saveIndex;` ~ "\n";
-                        sequence ~= `            return false;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    default:
-                        writeln("Can't handle ", segmentType);
+                    sequence ~= `            collectedNodes++;` ~ "\n";
                     }
+                    sequence ~= `            while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    if (status != NodeStatus.PRUNED)
+                    {
+                    sequence ~= `                collectedNodes++;` ~ "\n";
+                    }
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `        }` ~ "\n";
+                    sequence ~= `        else` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                    sequence ~= `            index = saveIndex;` ~ "\n";
+                    sequence ~= `            return false;` ~ "\n";
+                    sequence ~= `        }` ~ "\n";
                     break;
                 case "?":
-                    switch (segmentType)
+                    sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                    sequence ~= `        {` ~ "\n";
+                    if (status != NodeStatus.PRUNED)
                     {
-                    case "TERMINAL":
-                        sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "PARENSEGMENT":
-                        sequence ~= `        if (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes += result.collectedNodes;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    case "RULENAME":
-                        auto ruleName = (cast(ASTTerminal)(segmentNode.children[0])).token;
-                        sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
-                        sequence ~= `        {` ~ "\n";
-                        sequence ~= `            collectedNodes++;` ~ "\n";
-                        sequence ~= `        }` ~ "\n";
-                        break;
-                    default:
-                        writeln("Can't handle ", segmentType);
+                    sequence ~= `            collectedNodes++;` ~ "\n";
                     }
+                    sequence ~= `        }` ~ "\n";
                     break;
                 }
             }
             else
             {
-                switch (segmentType)
+                sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                if (status != NodeStatus.PRUNED)
                 {
-                case "TERMINAL":
-                    sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            collectedNodes++;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    sequence ~= `        else` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                    sequence ~= `            index = saveIndex;` ~ "\n";
-                    sequence ~= `            return false;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    break;
-                case "PARENSEGMENT":
-                    sequence ~= `        if (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            collectedNodes += result.collectedNodes;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    sequence ~= `        else` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                    sequence ~= `            index = saveIndex;` ~ "\n";
-                    sequence ~= `            return false;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    break;
-                case "RULENAME":
-                    auto ruleName = (cast(ASTTerminal)(segmentNode.children[0])).token;
-                    sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            collectedNodes++;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    sequence ~= `        else` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
-                    sequence ~= `            index = saveIndex;` ~ "\n";
-                    sequence ~= `            return false;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    break;
-                default:
-                    writeln("Can't handle ", segmentType);
+                sequence ~= `            collectedNodes++;` ~ "\n";
                 }
+                sequence ~= `        }` ~ "\n";
+                sequence ~= `        else` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                sequence ~= `            index = saveIndex;` ~ "\n";
+                sequence ~= `            return false;` ~ "\n";
+                sequence ~= `        }` ~ "\n";
             }
             curFunc.sequences ~= [sequence];
+            break;
+        case "RULESEGMENT":
+            compile(node.children[0]);
             break;
         case "TERMINAL":
             auto terminalTypeNode = cast(ASTNonTerminal)node.children[0];
@@ -425,10 +476,16 @@ private:
             terminalFunc ~= `            if (mat)` ~ "\n";
             terminalFunc ~= `            {` ~ "\n";
             terminalFunc ~= `                debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");` ~ "\n";
+            if (status != NodeStatus.PRUNED)
+            {
             terminalFunc ~= `                auto terminal = new ASTTerminal(mat.captures[0], index);` ~ "\n";
+            }
             terminalFunc ~= `                index += mat.captures[0].length;` ~ "\n";
             terminalFunc ~= `                consumeWhitespace();` ~ "\n";
+            if (status != NodeStatus.PRUNED)
+            {
             terminalFunc ~= `                stack ~= terminal;` ~ "\n";
+            }
             terminalFunc ~= `            }` ~ "\n";
             terminalFunc ~= `            else` ~ "\n";
             terminalFunc ~= `            {` ~ "\n";
@@ -440,36 +497,61 @@ private:
             curFunc.termInFuncs ~= [terminalFunc];
             break;
         case "ORCHAIN":
+            inOrChain = true;
             string elseIf = "";
             string sequence = "";
             foreach (child; node.children)
             {
+                // RULESEGMENT or ORCHAINEXTRA
                 auto nonTermNode = cast(ASTNonTerminal)child;
+                while (nonTermNode.name != "RULESEGMENT")
+                {
+                    // Until RULESEGMENT only
+                    nonTermNode = cast(ASTNonTerminal)nonTermNode.children[0];
+                }
+                // ruleNameWithOp or terminalWithOp
                 auto segmentNode = cast(ASTNonTerminal)nonTermNode.children[0];
                 auto segmentType = segmentNode.name;
-                if (segmentType != "RULENAME")
+                // ruleName or terminal
+                auto typeNode = cast(ASTNonTerminal)segmentNode.children[0];
+                auto typeName = typeNode.name;
+                if (segmentType != "RULENAMEWITHOP")
                 {
                     compile(nonTermNode.children[0]);
                 }
-                switch (segmentType)
+                switch (typeName)
                 {
                 case "TERMINAL":
                     sequence ~= `        ` ~ elseIf ~ `if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                     sequence ~= `        {` ~ "\n";
+                    if (status != NodeStatus.PRUNED)
+                    {
                     sequence ~= `            collectedNodes++;` ~ "\n";
-                    sequence ~= `        }` ~ "\n";
-                    break;
-                case "PARENSEGMENT":
-                    sequence ~= `        ` ~ elseIf ~ `if (result = ` ~ curFunc.ruleName ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string ~ `(), result.isSuccess)` ~ "\n";
-                    sequence ~= `        {` ~ "\n";
-                    sequence ~= `            collectedNodes += result.collectedNodes;` ~ "\n";
+                    }
                     sequence ~= `        }` ~ "\n";
                     break;
                 case "RULENAME":
-                    auto ruleName = (cast(ASTTerminal)(segmentNode.children[0])).token;
+                    auto ruleName = (cast(ASTTerminal)(typeNode.children[0])).token;
                     sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleName ~ `())` ~ "\n";
                     sequence ~= `        {` ~ "\n";
+                    if (status == NodeStatus.PRUNED)
+                    {
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    }
+                    else if (status == NodeStatus.ELEVATED)
+                    {
+                    sequence ~= `            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                    sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                    sequence ~= `            foreach (child; tempNode.children)` ~ "\n";
+                    sequence ~= `            {` ~ "\n";
+                    sequence ~= `                stack ~= child;` ~ "\n";
+                    sequence ~= `            }` ~ "\n";
+                    sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                    }
+                    else
+                    {
                     sequence ~= `            collectedNodes++;` ~ "\n";
+                    }
                     sequence ~= `        }` ~ "\n";
                     break;
                 default:
@@ -484,7 +566,7 @@ private:
             sequence ~= `            return false;` ~ "\n";
             sequence ~= `        }` ~ "\n";
             curFunc.sequences ~= [sequence];
-            break;
+            inOrChain = false;
             break;
         default:
             writeln("No handler for ", node.name);
@@ -548,96 +630,6 @@ private:
 
 int main(string[] argv)
 {
-    // Version with parenthised sections
-    //auto parser = new Parser(
-    //    `
-    //    grammar :: rule + ;
-    //    rule :: ruleName "::" (orChain | ruleSegment) + ";" ;
-    //    ruleSegment :: (ruleName unaryOperator ?)
-    //                 | (parenSegment unaryOperator ?)
-    //                 | (terminal unaryOperator ?)
-    //                 ;
-    //    parenSegment :: "(" ruleSegment + ")" ;
-    //    orChain :: ruleSegment "|" ruleSegment ("|" ruleSegment)* ;
-    //    unaryOperator :: "*"
-    //                   | "+"
-    //                   | "?";
-    //    terminal :: terminalLiteral | terminalRegex ;
-    //    terminalLiteral :: /"(?:\\.|[^\"\\])*"/ ;
-    //    terminalRegex :: /\/(?:\\.|[^\/\\])*\// ;
-    //    ruleName :: /[a-zA-Z_][a-zA-Z0-9_]*/ ;
-    //    `
-    //    );
-    // Version without parentheses
-    //auto parser = new Parser(
-    //    `
-    //    grammar :: rule + ;
-    //    rule :: ruleName "::" orChainOrRuleSegment + ";" ;
-    //    orChainOrRuleSegment :: orChain | ruleSegment;
-    //    ruleSegment :: ruleNameWithOp
-    //                 | terminalWithOp
-    //                 ;
-    //    ruleNameWithOp :: ruleName unaryOperator ?;
-    //    terminalWithOp :: terminal unaryOperator ?;
-    //    orChain :: ruleSegment "\|" ruleSegment orChainExtra* ;
-    //    orChainExtra :: "\|" ruleSegment;
-    //    unaryOperator :: "\*"
-    //                   | "\+"
-    //                   | "\?";
-    //    terminal :: terminalLiteral | terminalRegex ;
-    //    terminalLiteral :: /"(?:\\.|[^"\\])*"/ ;
-    //    terminalRegex :: /\/(?:\\.|[^\/\\])*\// ;
-    //    ruleName :: /[a-zA-Z_][a-zA-Z0-9_]*/ ;
-    //    `
-    //    );
-    //auto parser = new Parser(
-    //    `
-    //    program :: block ;
-    //    block :: "begin" statement* "end" ;
-    //    statement :: assignment
-    //               | ifblock
-    //               | whileblock
-    //               | pass
-    //               | block
-    //               | print ;
-    //    assignment :: identifier ":=" expression terminator ;
-    //    pass :: "pass" terminator ;
-    //    ifblock :: "if" logicExpr statement "else" statement ;
-    //    whileblock :: "while" logicExpr statement ;
-
-    //    print :: "print" identifier terminator ;
-
-    //    expression :: sum ;
-    //    sum :: product sumOpProduct* ;
-    //    sumOpProduct :: sumOp product ;
-    //    product :: value mulOpValue* ;
-    //    mulOpValue :: mulOp value ;
-    //    value :: num
-    //           | parenExpr
-    //           | identifier ;
-    //    parenExpr :: "(" expression ")" ;
-
-    //    terminator :: ";" ;
-    //    sumOp :: /[+-]/ ;
-    //    mulOp :: /[*\/%]/ ;
-    //    num :: /[1-9][0-9]*(?:\.[0-9]*)?/ ;
-    //    identifier :: /[a-zA-Z_][a-zA-Z0-9_]*/ ;
-
-
-    //    logicExpr :: logicRelationship logicOpLogicRelationship* ;
-    //    logicOpLogicRelationship :: logicOp logicRelationship;
-    //    logicRelationship :: expression relationOpExpression ? ;
-    //    relationOpExpression :: relationOp expression;
-    //    logicOp :: "&&"
-    //             | "||" ;
-    //    relationOp :: "<"
-    //                | ">"
-    //                | "<="
-    //                | ">="
-    //                | "=="
-    //                | "!=" ;
-    //    `
-    //    );
     string line = "";
     string source = "";
     while ((line = stdin.readln) !is null)

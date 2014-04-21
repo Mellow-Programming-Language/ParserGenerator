@@ -380,6 +380,16 @@ private:
                 {
                 sequence ~= `            stack = stack[0..$-1];` ~ "\n";
                 }
+                else if (status == NodeStatus.ELEVATED)
+                {
+                sequence ~= `            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);` ~ "\n";
+                sequence ~= `            stack = stack[0..$-1];` ~ "\n";
+                sequence ~= `            foreach (child; tempNode.children)` ~ "\n";
+                sequence ~= `            {` ~ "\n";
+                sequence ~= `                stack ~= child;` ~ "\n";
+                sequence ~= `            }` ~ "\n";
+                sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                }
                 else
                 {
                 sequence ~= `            collectedNodes++;` ~ "\n";

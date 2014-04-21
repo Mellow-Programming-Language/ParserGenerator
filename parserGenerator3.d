@@ -44,6 +44,7 @@ private:
         FunctionComponents[] funcs;
         string header;
         string footer;
+        string startRule;
 
         void genHeaderFooter()
         {
@@ -66,7 +67,7 @@ private:
             header ~= `    {` ~ "\n";
             header ~= `        consumeWhitespace();` ~ "\n";
             header ~= `        ASTNode topNode = null;` ~ "\n";
-            header ~= `        if (grammar())` ~ "\n";
+            header ~= `        if (` ~ startRule ~ `())` ~ "\n";
             header ~= `        {` ~ "\n";
             header ~= `            topNode = stack[$-1];` ~ "\n";
             header ~= `        }` ~ "\n";
@@ -220,6 +221,7 @@ private:
         enum NodeStatus {PRUNED, ELEVATED, NORMAL}
         static NodeStatus status = NodeStatus.NORMAL;
         static inOrChain = false;
+        static firstRule = true;
         // Cast the general ASTNode to a non-terminal node to actually work
         // with
         auto node = cast(ASTNonTerminal)execNode;
@@ -238,6 +240,11 @@ private:
         case "RULE":
             auto ruleNameNode = cast(ASTNonTerminal)node.children[0];
             auto ruleName = (cast(ASTTerminal)(ruleNameNode.children[0])).token;
+            if (firstRule)
+            {
+                firstRule = false;
+                parserDef.startRule = ruleName;
+            }
             curFunc = new FunctionComponents(ruleName);
             foreach (child; node.children[1..$])
             {

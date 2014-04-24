@@ -658,6 +658,7 @@ int main(string[] argv)
     else
     {
         writeln("Failed to parse!");
+        return 1;
     }
     return 0;
 }

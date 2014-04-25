@@ -41,20 +41,23 @@ private:
     class ParserDefinition
     {
         string definition;
+        string nodeClassDefinitions;
         FunctionComponents[] funcs;
+        string imports;
         string header;
         string footer;
         string startRule;
 
         void genHeaderFooter()
         {
+            imports = "";
+            imports ~= `import std.stdio;` ~ "\n";
+            imports ~= `import std.regex;` ~ "\n";
+            imports ~= `import std.string;` ~ "\n";
+            imports ~= `import std.array;` ~ "\n";
+            imports ~= `import std.algorithm;` ~ "\n";
+            imports ~= `import visitor;` ~ "\n";
             header = "";
-            header ~= `import std.stdio;` ~ "\n";
-            header ~= `import std.regex;` ~ "\n";
-            header ~= `import std.string;` ~ "\n";
-            header ~= `import std.array;` ~ "\n";
-            header ~= `import std.algorithm;` ~ "\n";
-            header ~= `import grammarNode;` ~ "\n";
             header ~= `class Parser` ~ "\n";
             header ~= `{` ~ "\n";
             header ~= `    this (string source)` ~ "\n";
@@ -137,7 +140,10 @@ private:
         void compileDefinition()
         {
             genHeaderFooter();
+            genASTNodes();
             definition = "";
+            definition ~= imports;
+            definition ~= nodeClassDefinitions;
             definition ~= header;
             foreach (func; funcs)
             {
@@ -145,6 +151,65 @@ private:
                 definition ~= func.func;
             }
             definition ~= footer;
+        }
+
+        void genASTNodes()
+        {
+            nodeClassDefinitions = "";
+
+            nodeClassDefinitions ~= `void printTree(ASTNode node, string indent = "")` ~ "\n";
+            nodeClassDefinitions ~= `{` ~ "\n";
+            nodeClassDefinitions ~= `    if (cast(ASTNonTerminal)node)` ~ "\n";
+            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `        writeln(indent, (cast(ASTNonTerminal)node).name);` ~ "\n";
+            nodeClassDefinitions ~= `        foreach (x; (cast(ASTNonTerminal)node).children)` ~ "\n";
+            nodeClassDefinitions ~= `        {` ~ "\n";
+            nodeClassDefinitions ~= `            printTree(x, indent ~ "  ");` ~ "\n";
+            nodeClassDefinitions ~= `        }` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `    else if (cast(ASTTerminal)node)` ~ "\n";
+            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `        writeln(indent, "[", (cast(ASTTerminal)node).token, "]: ",` ~ "\n";
+            nodeClassDefinitions ~= `            (cast(ASTTerminal)node).index);` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `}` ~ "\n";
+            nodeClassDefinitions ~= `abstract class ASTNode {}` ~ "\n";
+            nodeClassDefinitions ~= `abstract class ASTNonTerminal : ASTNode` ~ "\n";
+            nodeClassDefinitions ~= `{` ~ "\n";
+            nodeClassDefinitions ~= `    ASTNode[] children;` ~ "\n";
+            nodeClassDefinitions ~= `    string name;` ~ "\n";
+            nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
+            nodeClassDefinitions ~= `    void addChild(ASTNode node)` ~ "\n";
+            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `        children ~= node;` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `}` ~ "\n";
+            nodeClassDefinitions ~= `class ASTTerminal : ASTNode` ~ "\n";
+            nodeClassDefinitions ~= `{` ~ "\n";
+            nodeClassDefinitions ~= `    const string token;` ~ "\n";
+            nodeClassDefinitions ~= `    const uint index;` ~ "\n";
+            nodeClassDefinitions ~= `    this (string token, uint index)` ~ "\n";
+            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `        this.token = token;` ~ "\n";
+            nodeClassDefinitions ~= `        this.index = index;` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `}` ~ "\n";
+            foreach (func; funcs)
+            {
+                string curDef = "";
+                curDef ~= `class ` ~ func.ruleName ~ `Node : ASTNonTerminal` ~ "\n";
+                curDef ~= `{` ~ "\n";
+                curDef ~= `    this ()` ~ "\n";
+                curDef ~= `    {` ~ "\n";
+                curDef ~= `        this.name = "` ~ func.ruleName.toUpper ~ `";` ~ "\n";
+                curDef ~= `    }` ~ "\n";
+                curDef ~= `    override void accept(Visitor v)` ~ "\n";
+                curDef ~= `    {` ~ "\n";
+                curDef ~= `        v.visit(this);` ~ "\n";
+                curDef ~= `    }` ~ "\n";
+                curDef ~= `}` ~ "\n";
+                nodeClassDefinitions ~= curDef;
+            }
         }
     }
 
@@ -171,7 +236,7 @@ private:
             header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
             header ~= `        uint saveIndex = index;` ~ "\n";
 
-            footer ~= `        auto nonTerminal = new ASTNonTerminal("` ~ ruleName.toUpper ~ `");` ~ "\n";
+            footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";
             footer ~= `        {` ~ "\n";
             footer ~= `            nonTerminal.addChild(node);` ~ "\n";

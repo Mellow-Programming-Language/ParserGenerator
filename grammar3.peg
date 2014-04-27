@@ -1,32 +1,32 @@
-grammar :: rule + ;
+Grammar :: Rule + ;
 
-rule :: ruleName #"::" ^prunedElevatedNormal + #";" ;
+Rule :: RuleName #"::" ^PrunedElevatedNormal + #";" ;
 
-prunedElevatedNormal :: pruned | elevated | normal;
-pruned :: #"#" orChain | ruleSegment ;
-elevated :: #"\^" orChain | ruleSegment ;
-normal :: orChain | ruleSegment ;
+PrunedElevatedNormal :: Pruned | Elevated | Normal;
+Pruned :: #"#" OrChain | RuleSegment ;
+Elevated :: #"\^" OrChain | RuleSegment ;
+Normal :: OrChain | RuleSegment ;
 
-ruleSegment :: ruleNameWithOp
-             | terminalWithOp
+RuleSegment :: RuleNameWithOp
+             | TerminalWithOp
              ;
 
-ruleNameWithOp :: ruleName unaryOperator ?;
+RuleNameWithOp :: RuleName UnaryOperator ?;
 
-terminalWithOp :: terminal unaryOperator ?;
+TerminalWithOp :: Terminal UnaryOperator ?;
 
-orChain :: ruleSegment #"\|" ruleSegment ^orChainExtra* ;
+OrChain :: RuleSegment #"\|" RuleSegment ^OrChainExtra* ;
 
-orChainExtra :: #"\|" ruleSegment;
+OrChainExtra :: #"\|" RuleSegment;
 
-unaryOperator :: "\*"
+UnaryOperator :: "\*"
                | "\+"
                | "\?";
 
-terminal :: terminalLiteral | terminalRegex ;
+Terminal :: TerminalLiteral | TerminalRegex ;
 
-terminalLiteral :: /"(?:\\.|[^"\\])*"/ ;
+TerminalLiteral :: /"(?:\\.|[^"\\])*"/ ;
 
-terminalRegex :: /\/(?:\\.|[^\/\\])*\// ;
+TerminalRegex :: /\/(?:\\.|[^\/\\])*\// ;
 
-ruleName :: /[a-zA-Z_][a-zA-Z0-9_]*/ ;
+RuleName :: /[a-zA-Z_][a-zA-Z0-9_]*/ ;

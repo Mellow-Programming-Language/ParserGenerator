@@ -3,22 +3,22 @@ import grammarParser4;
 
 interface Visitor
 {
-    void visit(grammarNode node);
-    void visit(ruleNode node);
-    void visit(prunedElevatedNormalNode node);
-    void visit(prunedNode node);
-    void visit(elevatedNode node);
-    void visit(normalNode node);
-    void visit(ruleSegmentNode node);
-    void visit(ruleNameWithOpNode node);
-    void visit(terminalWithOpNode node);
-    void visit(orChainNode node);
-    void visit(orChainExtraNode node);
-    void visit(unaryOperatorNode node);
-    void visit(terminalNode node);
-    void visit(terminalLiteralNode node);
-    void visit(terminalRegexNode node);
-    void visit(ruleNameNode node);
+    void visit(GrammarNode node);
+    void visit(RuleNode node);
+    void visit(PrunedElevatedNormalNode node);
+    void visit(PrunedNode node);
+    void visit(ElevatedNode node);
+    void visit(NormalNode node);
+    void visit(RuleSegmentNode node);
+    void visit(RuleNameWithOpNode node);
+    void visit(TerminalWithOpNode node);
+    void visit(OrChainNode node);
+    void visit(OrChainExtraNode node);
+    void visit(UnaryOperatorNode node);
+    void visit(TerminalNode node);
+    void visit(TerminalLiteralNode node);
+    void visit(TerminalRegexNode node);
+    void visit(RuleNameNode node);
     void visit(ASTTerminal node);
 }
 
@@ -29,7 +29,7 @@ class PrintVisitor : Visitor
     {
         indent = "";
     }
-    void visit(grammarNode node)
+    void visit(GrammarNode node)
     {
         writeln(indent, "GRAMMARNODE");
         indent ~= "  ";
@@ -39,7 +39,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(ruleNode node)
+    void visit(RuleNode node)
     {
         writeln(indent, "RULENODE");
         indent ~= "  ";
@@ -49,7 +49,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(prunedElevatedNormalNode node)
+    void visit(PrunedElevatedNormalNode node)
     {
         writeln(indent, "PRUNEDELEVATEDNORMALNODE");
         indent ~= "  ";
@@ -59,7 +59,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(prunedNode node)
+    void visit(PrunedNode node)
     {
         writeln(indent, "PRUNEDNODE");
         indent ~= "  ";
@@ -69,7 +69,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(elevatedNode node)
+    void visit(ElevatedNode node)
     {
         writeln(indent, "ELEVATEDNODE");
         indent ~= "  ";
@@ -79,7 +79,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(normalNode node)
+    void visit(NormalNode node)
     {
         writeln(indent, "NORMALNODE");
         indent ~= "  ";
@@ -89,7 +89,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(ruleSegmentNode node)
+    void visit(RuleSegmentNode node)
     {
         writeln(indent, "RULESEGMENTNODE");
         indent ~= "  ";
@@ -99,7 +99,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(ruleNameWithOpNode node)
+    void visit(RuleNameWithOpNode node)
     {
         writeln(indent, "RULENAMEWITHOPNODE");
         indent ~= "  ";
@@ -109,7 +109,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(terminalWithOpNode node)
+    void visit(TerminalWithOpNode node)
     {
         writeln(indent, "TERMINALWITHOPNODE");
         indent ~= "  ";
@@ -119,7 +119,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(orChainNode node)
+    void visit(OrChainNode node)
     {
         writeln(indent, "ORCHAINNODE");
         indent ~= "  ";
@@ -129,7 +129,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(orChainExtraNode node)
+    void visit(OrChainExtraNode node)
     {
         writeln(indent, "ORCHAINEXTRANODE");
         indent ~= "  ";
@@ -139,7 +139,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(unaryOperatorNode node)
+    void visit(UnaryOperatorNode node)
     {
         writeln(indent, "UNARYOPERATORNODE");
         indent ~= "  ";
@@ -149,7 +149,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(terminalNode node)
+    void visit(TerminalNode node)
     {
         writeln(indent, "TERMINALNODE");
         indent ~= "  ";
@@ -159,7 +159,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(terminalLiteralNode node)
+    void visit(TerminalLiteralNode node)
     {
         writeln(indent, "TERMINALLITERALNODE");
         indent ~= "  ";
@@ -169,7 +169,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(terminalRegexNode node)
+    void visit(TerminalRegexNode node)
     {
         writeln(indent, "TERMINALREGEXNODE");
         indent ~= "  ";
@@ -179,7 +179,7 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(ruleNameNode node)
+    void visit(RuleNameNode node)
     {
         writeln(indent, "RULENAMENODE");
         indent ~= "  ";

@@ -19,7 +19,7 @@ int main(string[] argv)
     if (topNode !is null)
     {
         auto visitor = new PrintVisitor();
-        visitor.visit(cast(grammarNode)topNode);
+        visitor.visit(cast(GrammarNode)topNode);
     }
     else
     {

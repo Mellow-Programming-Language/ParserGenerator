@@ -5,3 +5,7 @@ To bootstrap:
     // Remove the terminal nodes from the AST gen in grammarParser2.d
     dmd grammarParser2.d parserGenerator2.d grammarNode.d
     ./grammarParser2 < grammar3.peg > grammarParser3.d
+    dmd grammarParser3.d parserGenerator3.d grammarNode.d
+    ./grammarParser3 < grammar4.peg > grammarParser4.d
+    dmd grammarParser4.d parserGenerator4.d visitor.d
+    ./grammarParser4 < grammar4.peg > grammarParser4.d // Ad infinitum

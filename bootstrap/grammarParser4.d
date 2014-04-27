@@ -3,7 +3,226 @@ import std.regex;
 import std.string;
 import std.array;
 import std.algorithm;
-import grammarNode;
+import visitor;
+void printTree(ASTNode node, string indent = "")
+{
+    if (cast(ASTNonTerminal)node)
+    {
+        writeln(indent, (cast(ASTNonTerminal)node).name);
+        foreach (x; (cast(ASTNonTerminal)node).children)
+        {
+            printTree(x, indent ~ "  ");
+        }
+    }
+    else if (cast(ASTTerminal)node)
+    {
+        writeln(indent, "[", (cast(ASTTerminal)node).token, "]: ",
+            (cast(ASTTerminal)node).index);
+    }
+}
+interface ASTNode
+{
+    void accept(Visitor v);
+}
+abstract class ASTNonTerminal : ASTNode
+{
+    ASTNode[] children;
+    string name;
+    void addChild(ASTNode node)
+    {
+        children ~= node;
+    }
+}
+class ASTTerminal : ASTNode
+{
+    const string token;
+    const uint index;
+    this (string token, uint index)
+    {
+        this.token = token;
+        this.index = index;
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class GrammarNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "GRAMMAR";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class RuleNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "RULE";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class PrunedElevatedNormalNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "PRUNEDELEVATEDNORMAL";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class PrunedNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "PRUNED";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class ElevatedNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "ELEVATED";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class NormalNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "NORMAL";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class RuleSegmentNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "RULESEGMENT";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class RuleNameWithOpNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "RULENAMEWITHOP";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class TerminalWithOpNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "TERMINALWITHOP";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class OrChainNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "ORCHAIN";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class OrChainExtraNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "ORCHAINEXTRA";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class UnaryOperatorNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "UNARYOPERATOR";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class TerminalNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "TERMINAL";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class TerminalLiteralNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "TERMINALLITERAL";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class TerminalRegexNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "TERMINALREGEX";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
+class RuleNameNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "RULENAME";
+    }
+    void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
 class Parser
 {
     this (string source)
@@ -16,7 +235,7 @@ class Parser
     {
         consumeWhitespace();
         ASTNode topNode = null;
-        if (grammar())
+        if (Grammar())
         {
             topNode = stack[$-1];
         }
@@ -55,15 +274,15 @@ private:
             }
             `;
     }
-    bool grammar()
+    bool Grammar()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (rule())
+        if (Rule())
         {
             collectedNodes++;
-            while (rule())
+            while (Rule())
             {
                 collectedNodes++;
             }
@@ -74,7 +293,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("GRAMMAR");
+        auto nonTerminal = new GrammarNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -83,11 +302,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool rule()
+    bool Rule()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool ruleLiteral_1()
+        bool RuleLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^::`);
@@ -105,7 +324,7 @@ private:
             }
             return true;
         }
-        bool ruleLiteral_2()
+        bool RuleLiteral_2()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^;`);
@@ -124,7 +343,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (ruleName())
+        if (RuleName())
         {
             collectedNodes++;
         }
@@ -134,7 +353,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (ruleLiteral_1())
+        if (RuleLiteral_1())
         {
         }
         else
@@ -143,7 +362,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (prunedElevatedNormal())
+        if (PrunedElevatedNormal())
         {
             auto tempNode = cast(ASTNonTerminal)(stack[$-1]);
             stack = stack[0..$-1];
@@ -152,7 +371,7 @@ private:
                 stack ~= child;
             }
             collectedNodes += tempNode.children.length;
-            while (prunedElevatedNormal())
+            while (PrunedElevatedNormal())
             {
                 tempNode = cast(ASTNonTerminal)(stack[$-1]);
                 stack = stack[0..$-1];
@@ -169,7 +388,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (ruleLiteral_2())
+        if (RuleLiteral_2())
         {
         }
         else
@@ -178,7 +397,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("RULE");
+        auto nonTerminal = new RuleNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -187,20 +406,20 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool prunedElevatedNormal()
+    bool PrunedElevatedNormal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (pruned())
+        if (Pruned())
         {
             collectedNodes++;
         }
-        else if (elevated())
+        else if (Elevated())
         {
             collectedNodes++;
         }
-        else if (normal())
+        else if (Normal())
         {
             collectedNodes++;
         }
@@ -210,7 +429,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("PRUNEDELEVATEDNORMAL");
+        auto nonTerminal = new PrunedElevatedNormalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -219,11 +438,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool pruned()
+    bool Pruned()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool prunedLiteral_1()
+        bool PrunedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^#`);
@@ -242,7 +461,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (prunedLiteral_1())
+        if (PrunedLiteral_1())
         {
         }
         else
@@ -251,11 +470,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (orChain())
+        if (OrChain())
         {
             collectedNodes++;
         }
-        else if (ruleSegment())
+        else if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -265,7 +484,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("PRUNED");
+        auto nonTerminal = new PrunedNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -274,11 +493,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool elevated()
+    bool Elevated()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool elevatedLiteral_1()
+        bool ElevatedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\^`);
@@ -297,7 +516,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (elevatedLiteral_1())
+        if (ElevatedLiteral_1())
         {
         }
         else
@@ -306,11 +525,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (orChain())
+        if (OrChain())
         {
             collectedNodes++;
         }
-        else if (ruleSegment())
+        else if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -320,7 +539,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("ELEVATED");
+        auto nonTerminal = new ElevatedNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -329,16 +548,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool normal()
+    bool Normal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (orChain())
+        if (OrChain())
         {
             collectedNodes++;
         }
-        else if (ruleSegment())
+        else if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -348,7 +567,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("NORMAL");
+        auto nonTerminal = new NormalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -357,16 +576,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool ruleSegment()
+    bool RuleSegment()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (ruleNameWithOp())
+        if (RuleNameWithOp())
         {
             collectedNodes++;
         }
-        else if (terminalWithOp())
+        else if (TerminalWithOp())
         {
             collectedNodes++;
         }
@@ -376,7 +595,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("RULESEGMENT");
+        auto nonTerminal = new RuleSegmentNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -385,12 +604,12 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool ruleNameWithOp()
+    bool RuleNameWithOp()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (ruleName())
+        if (RuleName())
         {
             collectedNodes++;
         }
@@ -400,11 +619,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (unaryOperator())
+        if (UnaryOperator())
         {
             collectedNodes++;
         }
-        auto nonTerminal = new ASTNonTerminal("RULENAMEWITHOP");
+        auto nonTerminal = new RuleNameWithOpNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -413,12 +632,12 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool terminalWithOp()
+    bool TerminalWithOp()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (terminal())
+        if (Terminal())
         {
             collectedNodes++;
         }
@@ -428,11 +647,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (unaryOperator())
+        if (UnaryOperator())
         {
             collectedNodes++;
         }
-        auto nonTerminal = new ASTNonTerminal("TERMINALWITHOP");
+        auto nonTerminal = new TerminalWithOpNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -441,11 +660,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool orChain()
+    bool OrChain()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool orChainLiteral_1()
+        bool OrChainLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\|`);
@@ -464,7 +683,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (ruleSegment())
+        if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -474,7 +693,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (orChainLiteral_1())
+        if (OrChainLiteral_1())
         {
         }
         else
@@ -483,7 +702,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (ruleSegment())
+        if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -493,7 +712,7 @@ private:
             index = saveIndex;
             return false;
         }
-        while (orChainExtra())
+        while (OrChainExtra())
         {
             auto tempNode = cast(ASTNonTerminal)(stack[$-1]);
             stack = stack[0..$-1];
@@ -503,7 +722,7 @@ private:
             }
             collectedNodes += tempNode.children.length;
         }
-        auto nonTerminal = new ASTNonTerminal("ORCHAIN");
+        auto nonTerminal = new OrChainNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -512,11 +731,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool orChainExtra()
+    bool OrChainExtra()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool orChainExtraLiteral_1()
+        bool OrChainExtraLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\|`);
@@ -535,7 +754,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (orChainExtraLiteral_1())
+        if (OrChainExtraLiteral_1())
         {
         }
         else
@@ -544,7 +763,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (ruleSegment())
+        if (RuleSegment())
         {
             collectedNodes++;
         }
@@ -554,7 +773,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("ORCHAINEXTRA");
+        auto nonTerminal = new OrChainExtraNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -563,11 +782,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool unaryOperator()
+    bool UnaryOperator()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool unaryOperatorLiteral_1()
+        bool UnaryOperatorLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\*`);
@@ -587,7 +806,7 @@ private:
             }
             return true;
         }
-        bool unaryOperatorLiteral_2()
+        bool UnaryOperatorLiteral_2()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\+`);
@@ -607,7 +826,7 @@ private:
             }
             return true;
         }
-        bool unaryOperatorLiteral_3()
+        bool UnaryOperatorLiteral_3()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\?`);
@@ -628,15 +847,15 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (unaryOperatorLiteral_1())
+        if (UnaryOperatorLiteral_1())
         {
             collectedNodes++;
         }
-        else if (unaryOperatorLiteral_2())
+        else if (UnaryOperatorLiteral_2())
         {
             collectedNodes++;
         }
-        else if (unaryOperatorLiteral_3())
+        else if (UnaryOperatorLiteral_3())
         {
             collectedNodes++;
         }
@@ -646,7 +865,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("UNARYOPERATOR");
+        auto nonTerminal = new UnaryOperatorNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -655,16 +874,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool terminal()
+    bool Terminal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (terminalLiteral())
+        if (TerminalLiteral())
         {
             collectedNodes++;
         }
-        else if (terminalRegex())
+        else if (TerminalRegex())
         {
             collectedNodes++;
         }
@@ -674,7 +893,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("TERMINAL");
+        auto nonTerminal = new TerminalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -683,11 +902,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool terminalLiteral()
+    bool TerminalLiteral()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool terminalLiteralLiteral_1()
+        bool TerminalLiteralLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^"(?:\\.|[^"\\])*"`);
@@ -708,7 +927,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (terminalLiteralLiteral_1())
+        if (TerminalLiteralLiteral_1())
         {
             collectedNodes++;
         }
@@ -718,7 +937,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("TERMINALLITERAL");
+        auto nonTerminal = new TerminalLiteralNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -727,11 +946,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool terminalRegex()
+    bool TerminalRegex()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool terminalRegexLiteral_1()
+        bool TerminalRegexLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\/(?:\\.|[^\/\\])*\/`);
@@ -752,7 +971,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (terminalRegexLiteral_1())
+        if (TerminalRegexLiteral_1())
         {
             collectedNodes++;
         }
@@ -762,7 +981,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("TERMINALREGEX");
+        auto nonTerminal = new TerminalRegexNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);
@@ -771,11 +990,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool ruleName()
+    bool RuleName()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool ruleNameLiteral_1()
+        bool RuleNameLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^[a-zA-Z_][a-zA-Z0-9_]*`);
@@ -796,7 +1015,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (ruleNameLiteral_1())
+        if (RuleNameLiteral_1())
         {
             collectedNodes++;
         }
@@ -806,7 +1025,7 @@ private:
             index = saveIndex;
             return false;
         }
-        auto nonTerminal = new ASTNonTerminal("RULENAME");
+        auto nonTerminal = new RuleNameNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);

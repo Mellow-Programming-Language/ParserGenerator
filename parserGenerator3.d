@@ -173,12 +173,14 @@ private:
             nodeClassDefinitions ~= `            (cast(ASTTerminal)node).index);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
-            nodeClassDefinitions ~= `abstract class ASTNode {}` ~ "\n";
+            nodeClassDefinitions ~= `interface ASTNode` ~ "\n";
+            nodeClassDefinitions ~= `{` ~ "\n";
+            nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
+            nodeClassDefinitions ~= `}` ~ "\n";
             nodeClassDefinitions ~= `abstract class ASTNonTerminal : ASTNode` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
             nodeClassDefinitions ~= `    ASTNode[] children;` ~ "\n";
             nodeClassDefinitions ~= `    string name;` ~ "\n";
-            nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
             nodeClassDefinitions ~= `    void addChild(ASTNode node)` ~ "\n";
             nodeClassDefinitions ~= `    {` ~ "\n";
             nodeClassDefinitions ~= `        children ~= node;` ~ "\n";
@@ -193,6 +195,10 @@ private:
             nodeClassDefinitions ~= `        this.token = token;` ~ "\n";
             nodeClassDefinitions ~= `        this.index = index;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `    void accept(Visitor v)` ~ "\n";
+            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `        v.visit(this);` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
             foreach (func; funcs)
             {
@@ -203,7 +209,7 @@ private:
                 curDef ~= `    {` ~ "\n";
                 curDef ~= `        this.name = "` ~ func.ruleName.toUpper ~ `";` ~ "\n";
                 curDef ~= `    }` ~ "\n";
-                curDef ~= `    override void accept(Visitor v)` ~ "\n";
+                curDef ~= `    void accept(Visitor v)` ~ "\n";
                 curDef ~= `    {` ~ "\n";
                 curDef ~= `        v.visit(this);` ~ "\n";
                 curDef ~= `    }` ~ "\n";

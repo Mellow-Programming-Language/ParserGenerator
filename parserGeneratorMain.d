@@ -654,15 +654,19 @@ private:
             visitBoiler ~= `        writeln(indent, "[", node.token, "]: ", node.index);` ~ "\n";
             visitBoiler ~= `    }` ~ "\n";
             visitBoiler ~= `}` ~ "\n";
-            auto file = new File("visitor.d", "w");
-            scope (exit) file.close();
-            if (file.isOpen())
+            import std.file;
+            if (!"visitor.d".exists)
             {
-                file.write(visitBoiler);
-            }
-            else
-            {
-                // Failed to write out visitor.d
+                auto file = new File("visitor.d", "w");
+                scope (exit) file.close();
+                if (file.isOpen())
+                {
+                    file.write(visitBoiler);
+                }
+                else
+                {
+                    // Failed to write out visitor.d
+                }
             }
         }
     }

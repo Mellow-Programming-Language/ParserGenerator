@@ -4,7 +4,7 @@ import std.string;
 import std.array;
 import std.string;
 import visitor;
-import grammarParser4;
+import grammarParserMain;
 
 class GenParser : Visitor
 {

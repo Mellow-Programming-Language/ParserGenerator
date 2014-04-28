@@ -6,6 +6,11 @@ import std.string;
 import visitor;
 import grammarParserMain;
 
+string camel(string name)
+{
+    return name[0..1].toLower ~ name[1..$];
+}
+
 class GenParser : Visitor
 {
     this (ASTNode topNode)
@@ -90,7 +95,7 @@ class GenParser : Visitor
             final switch (op)
             {
             case "*":
-                sequence ~= `        while (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `        while (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
                 {
@@ -113,7 +118,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             case "+":
-                sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
                 {
@@ -133,7 +138,7 @@ class GenParser : Visitor
                 {
                 sequence ~= `            collectedNodes++;` ~ "\n";
                 }
-                sequence ~= `            while (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `            while (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `            {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
                 {
@@ -163,7 +168,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             case "?":
-                sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
                 {
@@ -189,7 +194,7 @@ class GenParser : Visitor
         }
         else
         {
-            sequence ~= `        if (` ~ ruleName ~ `())` ~ "\n";
+            sequence ~= `        if (` ~ ruleName.camel ~ `())` ~ "\n";
             sequence ~= `        {` ~ "\n";
             if (status == NodeStatus.PRUNED)
             {
@@ -235,7 +240,7 @@ class GenParser : Visitor
             final switch (op)
             {
             case "*":
-                sequence ~= `        while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        while (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
@@ -244,13 +249,13 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             case "+":
-                sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
                 sequence ~= `            collectedNodes++;` ~ "\n";
                 }
-                sequence ~= `            while (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `            while (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                 sequence ~= `            {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
@@ -266,7 +271,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             case "?":
-                sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
@@ -278,7 +283,7 @@ class GenParser : Visitor
         }
         else
         {
-            sequence ~= `        if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+            sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
             sequence ~= `        {` ~ "\n";
             if (status != NodeStatus.PRUNED)
             {
@@ -305,7 +310,7 @@ class GenParser : Visitor
         auto terminalTypeNode = cast(ASTNonTerminal)node.children[0];
         auto terminal = (cast(ASTTerminal)(terminalTypeNode.children[0])).token;
         string terminalFunc = "";
-        terminalFunc ~= `        bool ` ~ curFunc.ruleName ~ `Literal_` ~ (curFunc.termInFuncs.length + 1).to!string ~ `()` ~ "\n";
+        terminalFunc ~= `        bool ` ~ curFunc.ruleName.camel ~ `Literal_` ~ (curFunc.termInFuncs.length + 1).to!string ~ `()` ~ "\n";
         terminalFunc ~= `        {` ~ "\n";
         terminalFunc ~= `            debug (TRACE) mixin(tracer);` ~ "\n";
         terminalFunc ~= "            auto reg = ctRegex!(`^" ~ terminal[1..$-1] ~ "`);" ~ "\n";
@@ -356,7 +361,7 @@ class GenParser : Visitor
             switch (typeName)
             {
             case "TERMINAL":
-                sequence ~= `        ` ~ elseIf ~ `if (` ~ curFunc.ruleName ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        ` ~ elseIf ~ `if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
@@ -366,7 +371,7 @@ class GenParser : Visitor
                 break;
             case "RULENAME":
                 auto ruleName = (cast(ASTTerminal)(typeNode.children[0])).token;
-                sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleName ~ `())` ~ "\n";
+                sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
                 {
@@ -455,7 +460,7 @@ private:
             header ~= `    {` ~ "\n";
             header ~= `        consumeWhitespace();` ~ "\n";
             header ~= `        ASTNode topNode = null;` ~ "\n";
-            header ~= `        if (` ~ startRule ~ `())` ~ "\n";
+            header ~= `        if (` ~ startRule.camel ~ `())` ~ "\n";
             header ~= `        {` ~ "\n";
             header ~= `            topNode = stack[$-1];` ~ "\n";
             header ~= `        }` ~ "\n";
@@ -680,7 +685,7 @@ private:
         void genHeaderFooter()
         {
             header = "";
-            header ~= `    bool ` ~ ruleName ~ "()\n";
+            header ~= `    bool ` ~ ruleName.camel ~ "()\n";
             header ~= `    {` ~ "\n";
             header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
             header ~= `        uint saveIndex = index;` ~ "\n";

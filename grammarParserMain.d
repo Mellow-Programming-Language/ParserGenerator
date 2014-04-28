@@ -235,7 +235,7 @@ class Parser
     {
         consumeWhitespace();
         ASTNode topNode = null;
-        if (Grammar())
+        if (grammar())
         {
             topNode = stack[$-1];
         }
@@ -274,15 +274,15 @@ private:
             }
             `;
     }
-    bool Grammar()
+    bool grammar()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (Rule())
+        if (rule())
         {
             collectedNodes++;
-            while (Rule())
+            while (rule())
             {
                 collectedNodes++;
             }
@@ -302,11 +302,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool Rule()
+    bool rule()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool RuleLiteral_1()
+        bool ruleLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^::`);
@@ -324,7 +324,7 @@ private:
             }
             return true;
         }
-        bool RuleLiteral_2()
+        bool ruleLiteral_2()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^;`);
@@ -343,7 +343,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (RuleName())
+        if (ruleName())
         {
             collectedNodes++;
         }
@@ -353,7 +353,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (RuleLiteral_1())
+        if (ruleLiteral_1())
         {
         }
         else
@@ -362,7 +362,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (PrunedElevatedNormal())
+        if (prunedElevatedNormal())
         {
             auto tempNode = cast(ASTNonTerminal)(stack[$-1]);
             stack = stack[0..$-1];
@@ -371,7 +371,7 @@ private:
                 stack ~= child;
             }
             collectedNodes += tempNode.children.length;
-            while (PrunedElevatedNormal())
+            while (prunedElevatedNormal())
             {
                 tempNode = cast(ASTNonTerminal)(stack[$-1]);
                 stack = stack[0..$-1];
@@ -388,7 +388,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (RuleLiteral_2())
+        if (ruleLiteral_2())
         {
         }
         else
@@ -406,20 +406,20 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool PrunedElevatedNormal()
+    bool prunedElevatedNormal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (Pruned())
+        if (pruned())
         {
             collectedNodes++;
         }
-        else if (Elevated())
+        else if (elevated())
         {
             collectedNodes++;
         }
-        else if (Normal())
+        else if (normal())
         {
             collectedNodes++;
         }
@@ -438,11 +438,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool Pruned()
+    bool pruned()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool PrunedLiteral_1()
+        bool prunedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^#`);
@@ -461,7 +461,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (PrunedLiteral_1())
+        if (prunedLiteral_1())
         {
         }
         else
@@ -470,11 +470,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (OrChain())
+        if (orChain())
         {
             collectedNodes++;
         }
-        else if (RuleSegment())
+        else if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -493,11 +493,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool Elevated()
+    bool elevated()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool ElevatedLiteral_1()
+        bool elevatedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\^`);
@@ -516,7 +516,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (ElevatedLiteral_1())
+        if (elevatedLiteral_1())
         {
         }
         else
@@ -525,11 +525,11 @@ private:
             index = saveIndex;
             return false;
         }
-        if (OrChain())
+        if (orChain())
         {
             collectedNodes++;
         }
-        else if (RuleSegment())
+        else if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -548,16 +548,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool Normal()
+    bool normal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (OrChain())
+        if (orChain())
         {
             collectedNodes++;
         }
-        else if (RuleSegment())
+        else if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -576,16 +576,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool RuleSegment()
+    bool ruleSegment()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (RuleNameWithOp())
+        if (ruleNameWithOp())
         {
             collectedNodes++;
         }
-        else if (TerminalWithOp())
+        else if (terminalWithOp())
         {
             collectedNodes++;
         }
@@ -604,12 +604,12 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool RuleNameWithOp()
+    bool ruleNameWithOp()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (RuleName())
+        if (ruleName())
         {
             collectedNodes++;
         }
@@ -619,7 +619,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (UnaryOperator())
+        if (unaryOperator())
         {
             collectedNodes++;
         }
@@ -632,12 +632,12 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool TerminalWithOp()
+    bool terminalWithOp()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (Terminal())
+        if (terminal())
         {
             collectedNodes++;
         }
@@ -647,7 +647,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (UnaryOperator())
+        if (unaryOperator())
         {
             collectedNodes++;
         }
@@ -660,11 +660,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool OrChain()
+    bool orChain()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool OrChainLiteral_1()
+        bool orChainLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\|`);
@@ -683,7 +683,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (RuleSegment())
+        if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -693,7 +693,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (OrChainLiteral_1())
+        if (orChainLiteral_1())
         {
         }
         else
@@ -702,7 +702,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (RuleSegment())
+        if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -712,7 +712,7 @@ private:
             index = saveIndex;
             return false;
         }
-        while (OrChainExtra())
+        while (orChainExtra())
         {
             auto tempNode = cast(ASTNonTerminal)(stack[$-1]);
             stack = stack[0..$-1];
@@ -731,11 +731,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool OrChainExtra()
+    bool orChainExtra()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool OrChainExtraLiteral_1()
+        bool orChainExtraLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\|`);
@@ -754,7 +754,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (OrChainExtraLiteral_1())
+        if (orChainExtraLiteral_1())
         {
         }
         else
@@ -763,7 +763,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (RuleSegment())
+        if (ruleSegment())
         {
             collectedNodes++;
         }
@@ -782,11 +782,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool UnaryOperator()
+    bool unaryOperator()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool UnaryOperatorLiteral_1()
+        bool unaryOperatorLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\*`);
@@ -806,7 +806,7 @@ private:
             }
             return true;
         }
-        bool UnaryOperatorLiteral_2()
+        bool unaryOperatorLiteral_2()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\+`);
@@ -826,7 +826,7 @@ private:
             }
             return true;
         }
-        bool UnaryOperatorLiteral_3()
+        bool unaryOperatorLiteral_3()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\?`);
@@ -847,15 +847,15 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (UnaryOperatorLiteral_1())
+        if (unaryOperatorLiteral_1())
         {
             collectedNodes++;
         }
-        else if (UnaryOperatorLiteral_2())
+        else if (unaryOperatorLiteral_2())
         {
             collectedNodes++;
         }
-        else if (UnaryOperatorLiteral_3())
+        else if (unaryOperatorLiteral_3())
         {
             collectedNodes++;
         }
@@ -874,16 +874,16 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool Terminal()
+    bool terminal()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (TerminalLiteral())
+        if (terminalLiteral())
         {
             collectedNodes++;
         }
-        else if (TerminalRegex())
+        else if (terminalRegex())
         {
             collectedNodes++;
         }
@@ -902,11 +902,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool TerminalLiteral()
+    bool terminalLiteral()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool TerminalLiteralLiteral_1()
+        bool terminalLiteralLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^"(?:\\.|[^"\\])*"`);
@@ -927,7 +927,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (TerminalLiteralLiteral_1())
+        if (terminalLiteralLiteral_1())
         {
             collectedNodes++;
         }
@@ -946,11 +946,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool TerminalRegex()
+    bool terminalRegex()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool TerminalRegexLiteral_1()
+        bool terminalRegexLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^\/(?:\\.|[^\/\\])*\/`);
@@ -971,7 +971,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (TerminalRegexLiteral_1())
+        if (terminalRegexLiteral_1())
         {
             collectedNodes++;
         }
@@ -990,11 +990,11 @@ private:
         stack ~= nonTerminal;
         return true;
     }
-    bool RuleName()
+    bool ruleName()
     {
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
-        bool RuleNameLiteral_1()
+        bool ruleNameLiteral_1()
         {
             debug (TRACE) mixin(tracer);
             auto reg = ctRegex!(`^[a-zA-Z_][a-zA-Z0-9_]*`);
@@ -1015,7 +1015,7 @@ private:
             return true;
         }
         uint collectedNodes = 0;
-        if (RuleNameLiteral_1())
+        if (ruleNameLiteral_1())
         {
             collectedNodes++;
         }

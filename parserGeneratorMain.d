@@ -655,18 +655,15 @@ private:
             visitBoiler ~= `    }` ~ "\n";
             visitBoiler ~= `}` ~ "\n";
             import std.file;
-            if (!"visitor.d".exists)
+            auto file = new File("visitorAUTO.d", "w");
+            scope (exit) file.close();
+            if (file.isOpen())
             {
-                auto file = new File("visitor.d", "w");
-                scope (exit) file.close();
-                if (file.isOpen())
-                {
-                    file.write(visitBoiler);
-                }
-                else
-                {
-                    // Failed to write out visitor.d
-                }
+                file.write(visitBoiler);
+            }
+            else
+            {
+                // Failed to write out visitorAUTO.d
             }
         }
     }

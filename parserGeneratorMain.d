@@ -563,8 +563,9 @@ private:
             nodeClassDefinitions ~= `            (cast(ASTTerminal)node).index);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
-            nodeClassDefinitions ~= `interface ASTNode` ~ "\n";
+            nodeClassDefinitions ~= `abstract class ASTNode` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
+            nodeClassDefinitions ~= `    string[string] properties;` ~ "\n";
             nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
             nodeClassDefinitions ~= `abstract class ASTNonTerminal : ASTNode` ~ "\n";
@@ -585,7 +586,7 @@ private:
             nodeClassDefinitions ~= `        this.token = token;` ~ "\n";
             nodeClassDefinitions ~= `        this.index = index;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
-            nodeClassDefinitions ~= `    void accept(Visitor v)` ~ "\n";
+            nodeClassDefinitions ~= `    override void accept(Visitor v)` ~ "\n";
             nodeClassDefinitions ~= `    {` ~ "\n";
             nodeClassDefinitions ~= `        v.visit(this);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
@@ -599,7 +600,7 @@ private:
                 curDef ~= `    {` ~ "\n";
                 curDef ~= `        this.name = "` ~ func.ruleName.toUpper ~ `";` ~ "\n";
                 curDef ~= `    }` ~ "\n";
-                curDef ~= `    void accept(Visitor v)` ~ "\n";
+                curDef ~= `    override void accept(Visitor v)` ~ "\n";
                 curDef ~= `    {` ~ "\n";
                 curDef ~= `        v.visit(this);` ~ "\n";
                 curDef ~= `    }` ~ "\n";

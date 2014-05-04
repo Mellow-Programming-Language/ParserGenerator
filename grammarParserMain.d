@@ -20,8 +20,9 @@ void printTree(ASTNode node, string indent = "")
             (cast(ASTTerminal)node).index);
     }
 }
-interface ASTNode
+abstract class ASTNode
 {
+    string[string] properties;
     void accept(Visitor v);
 }
 abstract class ASTNonTerminal : ASTNode
@@ -42,7 +43,7 @@ class ASTTerminal : ASTNode
         this.token = token;
         this.index = index;
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -53,7 +54,7 @@ class GrammarNode : ASTNonTerminal
     {
         this.name = "GRAMMAR";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -64,7 +65,7 @@ class RuleNode : ASTNonTerminal
     {
         this.name = "RULE";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -75,7 +76,7 @@ class PrunedElevatedNormalNode : ASTNonTerminal
     {
         this.name = "PRUNEDELEVATEDNORMAL";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -86,7 +87,7 @@ class PrunedNode : ASTNonTerminal
     {
         this.name = "PRUNED";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -97,7 +98,7 @@ class ElevatedNode : ASTNonTerminal
     {
         this.name = "ELEVATED";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -108,7 +109,7 @@ class NormalNode : ASTNonTerminal
     {
         this.name = "NORMAL";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -119,7 +120,7 @@ class RuleSegmentNode : ASTNonTerminal
     {
         this.name = "RULESEGMENT";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -130,7 +131,7 @@ class RuleNameWithOpNode : ASTNonTerminal
     {
         this.name = "RULENAMEWITHOP";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -141,7 +142,7 @@ class TerminalWithOpNode : ASTNonTerminal
     {
         this.name = "TERMINALWITHOP";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -152,7 +153,7 @@ class OrChainNode : ASTNonTerminal
     {
         this.name = "ORCHAIN";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -163,7 +164,7 @@ class OrChainExtraNode : ASTNonTerminal
     {
         this.name = "ORCHAINEXTRA";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -174,7 +175,7 @@ class UnaryOperatorNode : ASTNonTerminal
     {
         this.name = "UNARYOPERATOR";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -185,7 +186,7 @@ class TerminalNode : ASTNonTerminal
     {
         this.name = "TERMINAL";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -196,7 +197,7 @@ class TerminalLiteralNode : ASTNonTerminal
     {
         this.name = "TERMINALLITERAL";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -207,7 +208,7 @@ class TerminalRegexNode : ASTNonTerminal
     {
         this.name = "TERMINALREGEX";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }
@@ -218,7 +219,7 @@ class RuleNameNode : ASTNonTerminal
     {
         this.name = "RULENAME";
     }
-    void accept(Visitor v)
+    override void accept(Visitor v)
     {
         v.visit(this);
     }

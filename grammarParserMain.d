@@ -577,7 +577,7 @@ private:
             index = saveIndex;
             return false;
         }
-        if (ruleSegment())
+        if (ruleNameWithOp())
         {
             collectedNodes++;
         }

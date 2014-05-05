@@ -4,7 +4,7 @@ Rule :: RuleName #"::" ^PrunedElevatedNormal + #";" ;
 
 PrunedElevatedNormal :: Normal | Pruned | Elevated;
 Pruned :: #"#" RuleSegment ;
-Elevated :: #"\^" RuleSegment ;
+Elevated :: #"\^" RuleNameWithOp ;
 Normal :: OrChain | RuleSegment;
 
 PrunedPlain :: #"#" ^TerminalOrRulename ;

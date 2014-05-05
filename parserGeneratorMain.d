@@ -65,12 +65,6 @@ class GenParser : Visitor
         parserDef.funcs ~= [curFunc];
     }
 
-    void visit(NormalNode node)
-    {
-        status = NodeStatus.NORMAL;
-        node.children[0].accept(this);
-    }
-
     void visit(PrunedNode node)
     {
         status = NodeStatus.PRUNED;
@@ -80,6 +74,30 @@ class GenParser : Visitor
     void visit(ElevatedNode node)
     {
         status = NodeStatus.ELEVATED;
+        node.children[0].accept(this);
+    }
+
+    void visit(NormalNode node)
+    {
+        status = NodeStatus.NORMAL;
+        node.children[0].accept(this);
+    }
+
+    void visit(PrunedPlainNode node)
+    {
+        status = NodeStatus.PRUNED;
+        node.children[0].accept(this);
+    }
+
+    void visit(ElevatedPlainNode node)
+    {
+        status = NodeStatus.ELEVATED;
+        node.children[0].accept(this);
+    }
+
+    void visit(OrChainNormalNode node)
+    {
+        status = NodeStatus.NORMAL;
         node.children[0].accept(this);
     }
 
@@ -346,19 +364,11 @@ class GenParser : Visitor
         string sequence = "";
         foreach (child; node.children)
         {
-            // RULESEGMENT
-            auto nonTermNode = cast(ASTNonTerminal)child;
-            // ruleNameWithOp or terminalWithOp
-            auto segmentNode = cast(ASTNonTerminal)nonTermNode.children[0];
-            auto segmentType = segmentNode.name;
-            // ruleName or terminal
-            auto typeNode = cast(ASTNonTerminal)segmentNode.children[0];
-            auto typeName = typeNode.name;
-            if (segmentType != "RULENAMEWITHOP")
-            {
-                segmentNode.accept(this);
-            }
-            switch (typeName)
+            // PrunedPlain or ElevatedPlain or OrChainNormal
+            auto childNode = cast(ASTNonTerminal)child;
+            childNode.accept(this);
+            childNode = cast(ASTNonTerminal)childNode.children[0];
+            switch (childNode.name)
             {
             case "TERMINAL":
                 sequence ~= `        ` ~ elseIf ~ `if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
@@ -370,7 +380,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             case "RULENAME":
-                auto ruleName = (cast(ASTTerminal)(typeNode.children[0])).token;
+                auto ruleName = (cast(ASTTerminal)(childNode.children[0])).token;
                 sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status == NodeStatus.PRUNED)
@@ -394,7 +404,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 break;
             default:
-                writeln("Can't handle ", segmentType);
+                writeln("Can't handle ", childNode.name);
             }
             elseIf = "else ";
         }
@@ -409,6 +419,8 @@ class GenParser : Visitor
     }
 
     void visit(PrunedElevatedNormalNode node) {}
+    void visit(TerminalOrRulenameNode node) {}
+    void visit(PrunedElevatedForChainNode node) {}
     void visit(OrChainExtraNode node) {}
     void visit(UnaryOperatorNode node) {}
     void visit(TerminalRegexNode node) {}

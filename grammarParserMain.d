@@ -3,7 +3,6 @@ import std.regex;
 import std.string;
 import std.array;
 import std.algorithm;
-import std.conv;
 import visitor;
 void printTree(ASTNode node, string indent = "")
 {
@@ -296,17 +295,11 @@ class Parser
         {
             topNode = stack[$-1];
         }
-        if (index < source.length)
-        {
-            writeln(errorMessage);
-        }
         index = 0;
         stack = [];
         return topNode;
     }
 private:
-    string errorMessage;
-    uint errorIndex;
     string source;
     uint index;
     ASTNode[] stack;
@@ -354,11 +347,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Grammar at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new GrammarNode();
@@ -388,11 +376,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -411,11 +394,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -429,11 +407,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (ruleLiteral_1())
@@ -443,11 +416,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (prunedElevatedNormal())
@@ -474,11 +442,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (ruleLiteral_2())
@@ -488,11 +451,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Rule at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new RuleNode();
@@ -525,11 +483,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in PrunedElevatedNormal at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new PrunedElevatedNormalNode();
@@ -559,11 +512,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in Pruned at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -576,11 +524,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Pruned at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (ruleSegment())
@@ -591,11 +534,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Pruned at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new PrunedNode();
@@ -625,11 +563,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in Elevated at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -642,11 +575,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Elevated at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (ruleNameWithOp())
@@ -657,11 +585,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Elevated at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new ElevatedNode();
@@ -690,11 +613,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Normal at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new NormalNode();
@@ -724,11 +642,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in PrunedPlain at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -741,11 +654,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in PrunedPlain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (terminalOrRulename())
@@ -762,11 +670,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in PrunedPlain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new PrunedPlainNode();
@@ -796,11 +699,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in ElevatedPlain at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -813,11 +711,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in ElevatedPlain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (ruleName())
@@ -828,11 +721,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in ElevatedPlain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new ElevatedPlainNode();
@@ -861,11 +749,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChainNormal at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new OrChainNormalNode();
@@ -894,11 +777,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in TerminalOrRulename at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new TerminalOrRulenameNode();
@@ -931,11 +809,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in PrunedElevatedForChain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new PrunedElevatedForChainNode();
@@ -964,11 +837,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in RuleSegment at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new RuleSegmentNode();
@@ -993,11 +861,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in RuleNameWithOp at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (unaryOperator())
@@ -1026,11 +889,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in TerminalWithOp at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (unaryOperator())
@@ -1064,11 +922,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in OrChain at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1088,11 +941,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (orChainLiteral_1())
@@ -1102,11 +950,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (prunedElevatedForChain())
@@ -1123,11 +966,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChain at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         while (orChainExtra())
@@ -1167,11 +1005,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in OrChainExtra at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1184,11 +1017,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChainExtra at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         if (prunedElevatedForChain())
@@ -1205,11 +1033,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in OrChainExtra at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new OrChainExtraNode();
@@ -1241,11 +1064,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in UnaryOperator at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1266,11 +1084,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in UnaryOperator at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1291,11 +1104,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in UnaryOperator at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1317,11 +1125,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in UnaryOperator at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new UnaryOperatorNode();
@@ -1350,11 +1153,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in Terminal at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new TerminalNode();
@@ -1386,11 +1184,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in TerminalLiteral at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1404,11 +1197,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in TerminalLiteral at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new TerminalLiteralNode();
@@ -1440,11 +1228,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in TerminalRegex at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1458,11 +1241,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in TerminalRegex at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new TerminalRegexNode();
@@ -1494,11 +1272,6 @@ private:
             else
             {
                 debug (TRACE) writeln(traceIndent, "  No match.");
-                if (index >= errorIndex)
-                {
-                    errorMessage = "Error in RuleName at " ~ index.to!string ~ "\n";
-                    errorIndex = index;
-                }
                 return false;
             }
             return true;
@@ -1512,11 +1285,6 @@ private:
         {
             stack = stack[0..$-collectedNodes];
             index = saveIndex;
-            if (index >= errorIndex)
-            {
-                errorMessage = "Error in RuleName at " ~ index.to!string ~ "\n";
-                errorIndex = index;
-            }
             return false;
         }
         auto nonTerminal = new RuleNameNode();

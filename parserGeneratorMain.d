@@ -182,11 +182,6 @@ class GenParser : Visitor
                 sequence ~= `        {` ~ "\n";
                 sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
                 sequence ~= `            index = saveIndex;` ~ "\n";
-                sequence ~= `            if (index >= errorIndex)` ~ "\n";
-                sequence ~= `            {` ~ "\n";
-                sequence ~= `                errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-                sequence ~= `                errorIndex = index;` ~ "\n";
-                sequence ~= `            }` ~ "\n";
                 sequence ~= `            return false;` ~ "\n";
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -242,11 +237,6 @@ class GenParser : Visitor
             sequence ~= `        {` ~ "\n";
             sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
             sequence ~= `            index = saveIndex;` ~ "\n";
-            sequence ~= `            if (index >= errorIndex)` ~ "\n";
-            sequence ~= `            {` ~ "\n";
-            sequence ~= `                errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-            sequence ~= `                errorIndex = index;` ~ "\n";
-            sequence ~= `            }` ~ "\n";
             sequence ~= `            return false;` ~ "\n";
             sequence ~= `        }` ~ "\n";
         }
@@ -295,11 +285,6 @@ class GenParser : Visitor
                 sequence ~= `        {` ~ "\n";
                 sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
                 sequence ~= `            index = saveIndex;` ~ "\n";
-                sequence ~= `            if (index >= errorIndex)` ~ "\n";
-                sequence ~= `            {` ~ "\n";
-                sequence ~= `                errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-                sequence ~= `                errorIndex = index;` ~ "\n";
-                sequence ~= `            }` ~ "\n";
                 sequence ~= `            return false;` ~ "\n";
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -327,11 +312,6 @@ class GenParser : Visitor
             sequence ~= `        {` ~ "\n";
             sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
             sequence ~= `            index = saveIndex;` ~ "\n";
-            sequence ~= `            if (index >= errorIndex)` ~ "\n";
-            sequence ~= `            {` ~ "\n";
-            sequence ~= `                errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-            sequence ~= `                errorIndex = index;` ~ "\n";
-            sequence ~= `            }` ~ "\n";
             sequence ~= `            return false;` ~ "\n";
             sequence ~= `        }` ~ "\n";
         }
@@ -370,11 +350,6 @@ class GenParser : Visitor
         terminalFunc ~= `            else` ~ "\n";
         terminalFunc ~= `            {` ~ "\n";
         terminalFunc ~= `                debug (TRACE) writeln(traceIndent, "  No match.");` ~ "\n";
-        terminalFunc ~= `                if (index >= errorIndex)` ~ "\n";
-        terminalFunc ~= `                {` ~ "\n";
-        terminalFunc ~= `                    errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-        terminalFunc ~= `                    errorIndex = index;` ~ "\n";
-        terminalFunc ~= `                }` ~ "\n";
         terminalFunc ~= `                return false;` ~ "\n";
         terminalFunc ~= `            }` ~ "\n";
         terminalFunc ~= `            return true;` ~ "\n";
@@ -437,11 +412,6 @@ class GenParser : Visitor
         sequence ~= `        {` ~ "\n";
         sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
         sequence ~= `            index = saveIndex;` ~ "\n";
-        sequence ~= `            if (index >= errorIndex)` ~ "\n";
-        sequence ~= `            {` ~ "\n";
-        sequence ~= `                errorMessage = "Error in ` ~ curFunc.ruleName ~ ` at " ~ index.to!string ~ "\n";` ~ "\n";
-        sequence ~= `                errorIndex = index;` ~ "\n";
-        sequence ~= `            }` ~ "\n";
         sequence ~= `            return false;` ~ "\n";
         sequence ~= `        }` ~ "\n";
         curFunc.sequences ~= [sequence];
@@ -488,7 +458,6 @@ private:
             imports ~= `import std.string;` ~ "\n";
             imports ~= `import std.array;` ~ "\n";
             imports ~= `import std.algorithm;` ~ "\n";
-            imports ~= `import std.conv;` ~ "\n";
             imports ~= `import visitor;` ~ "\n";
             header = "";
             header ~= `class Parser` ~ "\n";
@@ -507,17 +476,11 @@ private:
             header ~= `        {` ~ "\n";
             header ~= `            topNode = stack[$-1];` ~ "\n";
             header ~= `        }` ~ "\n";
-            header ~= `        if (index < source.length)` ~ "\n";
-            header ~= `        {` ~ "\n";
-            header ~= `            writeln(errorMessage);` ~ "\n";
-            header ~= `        }` ~ "\n";
             header ~= `        index = 0;` ~ "\n";
             header ~= `        stack = [];` ~ "\n";
             header ~= `        return topNode;` ~ "\n";
             header ~= `    }` ~ "\n";
             header ~= `private:` ~ "\n";
-            header ~= `    string errorMessage;` ~ "\n";
-            header ~= `    uint errorIndex;` ~ "\n";
             header ~= `    string source;` ~ "\n";
             header ~= `    uint index;` ~ "\n";
             header ~= `    ASTNode[] stack;` ~ "\n";

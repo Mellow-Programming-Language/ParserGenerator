@@ -367,10 +367,7 @@ class GenParser : Visitor
             // PrunedPlain or ElevatedPlain or OrChainNormal
             auto childNode = cast(ASTNonTerminal)child;
             childNode.accept(this);
-            if (childNode.name == "ORCHAINNORMAL")
-            {
-                childNode = cast(ASTNonTerminal)childNode.children[0];
-            }
+            childNode = cast(ASTNonTerminal)childNode.children[0];
             switch (childNode.name)
             {
             case "TERMINAL":

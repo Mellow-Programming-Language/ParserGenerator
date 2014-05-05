@@ -2,7 +2,7 @@ Grammar :: Rule + ;
 
 Rule :: RuleName #"::" ^PrunedElevatedNormal + #";" ;
 
-PrunedElevatedNormal :: Pruned | Elevated | Normal;
+PrunedElevatedNormal :: Normal | Pruned | Elevated;
 Pruned :: #"#" RuleSegment ;
 Elevated :: #"\^" RuleSegment ;
 Normal :: OrChain | RuleSegment;

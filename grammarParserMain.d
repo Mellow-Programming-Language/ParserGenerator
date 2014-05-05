@@ -467,15 +467,15 @@ private:
         debug (TRACE) mixin(tracer);
         uint saveIndex = index;
         uint collectedNodes = 0;
-        if (pruned())
+        if (normal())
+        {
+            collectedNodes++;
+        }
+        else if (pruned())
         {
             collectedNodes++;
         }
         else if (elevated())
-        {
-            collectedNodes++;
-        }
-        else if (normal())
         {
             collectedNodes++;
         }

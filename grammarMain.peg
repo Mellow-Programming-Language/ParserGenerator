@@ -3,9 +3,16 @@ Grammar :: Rule + ;
 Rule :: RuleName #"::" ^PrunedElevatedNormal + #";" ;
 
 PrunedElevatedNormal :: Pruned | Elevated | Normal;
-Pruned :: #"#" OrChain | RuleSegment ;
-Elevated :: #"\^" OrChain | RuleSegment ;
-Normal :: OrChain | RuleSegment ;
+Pruned :: #"#" RuleSegment ;
+Elevated :: #"\^" RuleSegment ;
+Normal :: OrChain | RuleSegment;
+
+PrunedPlain :: #"#" ^TerminalOrRulename ;
+ElevatedPlain :: #"\^" RuleName ;
+OrChainNormal :: RuleName | Terminal;
+TerminalOrRulename :: Terminal | RuleName;
+
+PrunedElevatedForChain :: PrunedPlain | ElevatedPlain | OrChainNormal;
 
 RuleSegment :: RuleNameWithOp
              | TerminalWithOp
@@ -15,9 +22,9 @@ RuleNameWithOp :: RuleName UnaryOperator ?;
 
 TerminalWithOp :: Terminal UnaryOperator ?;
 
-OrChain :: RuleSegment #"\|" RuleSegment ^OrChainExtra* ;
+OrChain :: ^PrunedElevatedForChain #"\|" ^PrunedElevatedForChain ^OrChainExtra*;
 
-OrChainExtra :: #"\|" RuleSegment;
+OrChainExtra :: #"\|" ^PrunedElevatedForChain;
 
 UnaryOperator :: "\*"
                | "\+"

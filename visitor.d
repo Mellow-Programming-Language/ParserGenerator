@@ -9,6 +9,11 @@ interface Visitor
     void visit(PrunedNode node);
     void visit(ElevatedNode node);
     void visit(NormalNode node);
+    void visit(OrChainNormalNode node);
+    void visit(PrunedPlainNode node);
+    void visit(ElevatedPlainNode node);
+    void visit(TerminalOrRulenameNode node);
+    void visit(PrunedElevatedForChainNode node);
     void visit(RuleSegmentNode node);
     void visit(RuleNameWithOpNode node);
     void visit(TerminalWithOpNode node);
@@ -82,6 +87,56 @@ class PrintVisitor : Visitor
     void visit(NormalNode node)
     {
         writeln(indent, "NORMALNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(OrChainNormalNode node)
+    {
+        writeln(indent, "ORCHAINNORMALNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(PrunedPlainNode node)
+    {
+        writeln(indent, "PRUNEDPLAINNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(ElevatedPlainNode node)
+    {
+        writeln(indent, "ELEVATEDPLAINNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(TerminalOrRulenameNode node)
+    {
+        writeln(indent, "TERMINALORRULENAMENODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(PrunedElevatedForChainNode node)
+    {
+        writeln(indent, "PRUNEDELEVATEDFORCHAINNODE");
         indent ~= "  ";
         foreach (child; node.children)
         {

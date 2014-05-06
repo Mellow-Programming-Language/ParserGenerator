@@ -2,19 +2,35 @@ Grammar :: Rule + ;
 
 Rule :: RuleName #"::" ^PrunedElevatedNormal + #";" ;
 
-PrunedElevatedNormal :: Normal | Pruned | Elevated;
+PrunedElevatedNormal :: Normal
+                      | ParenWithOp
+                      | Pruned
+                      | Elevated
+                      ;
+Paren :: #"\(" ^PrunedElevatedNormal* #"\)";
 Pruned :: #"#" RuleSegment ;
 Elevated :: #"\^" RuleNameWithOp ;
-Normal :: OrChain | RuleSegment;
+Normal :: OrChain
+        | RuleSegment
+        ;
 
 PrunedPlain :: #"#" ^TerminalOrRulename ;
 ElevatedPlain :: #"\^" RuleName ;
-OrChainNormal :: RuleName | Terminal;
-TerminalOrRulename :: Terminal | RuleName;
+OrChainNormal :: RuleName
+               | Terminal
+               ;
+TerminalOrRulename :: Terminal
+                    | RuleName
+                    ;
 
-PrunedElevatedForChain :: PrunedPlain | ElevatedPlain | OrChainNormal;
+PrunedElevatedForChain :: PrunedPlain
+                        | ElevatedPlain
+                        | OrChainNormal
+                        | Paren
+                        ;
 
-RuleSegment :: RuleNameWithOp
+RuleSegment :: ParenWithOp
+             | RuleNameWithOp
              | TerminalWithOp
              ;
 
@@ -22,7 +38,9 @@ RuleNameWithOp :: RuleName UnaryOperator ?;
 
 TerminalWithOp :: Terminal UnaryOperator ?;
 
-OrChain :: ^PrunedElevatedForChain #"\|" ^PrunedElevatedForChain ^OrChainExtra*;
+ParenWithOp :: Paren UnaryOperator ?;
+
+OrChain :: ^PrunedElevatedForChain #"\|" ^PrunedElevatedForChain (#"\|" ^PrunedElevatedForChain)*;
 
 OrChainExtra :: #"\|" ^PrunedElevatedForChain;
 
@@ -30,7 +48,8 @@ UnaryOperator :: "\*"
                | "\+"
                | "\?";
 
-Terminal :: TerminalLiteral | TerminalRegex ;
+Terminal :: TerminalLiteral
+          | TerminalRegex ;
 
 TerminalLiteral :: /"(?:\\.|[^"\\])*"/ ;
 

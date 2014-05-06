@@ -11,6 +11,18 @@ string camel(string name)
     return name[0..1].toLower ~ name[1..$];
 }
 
+string prefixToChunk(string src, string prefix)
+{
+    import std.algorithm;
+    auto srcSplit = src.split("\n").filter!(a => a.length > 0).array;
+    auto newSrc = "";
+    foreach (line; srcSplit)
+    {
+        newSrc ~= prefix ~ line ~ "\n";
+    }
+    return newSrc;
+}
+
 class GenParser : Visitor
 {
     this (ASTNode topNode)
@@ -22,6 +34,7 @@ class GenParser : Visitor
     body
     {
         this.topNode = topNode;
+        this.nodeCounter = "collectedNodes";
     }
 
     string generate()
@@ -63,6 +76,137 @@ class GenParser : Visitor
             child.accept(this);
         }
         parserDef.funcs ~= [curFunc];
+    }
+
+    void visit(ParenWithOpNode node)
+    {
+        node.children[0].accept(this);
+        if (inOrChain)
+        {
+            return;
+        }
+        string sequence = "";
+        string ruleParen;
+        if (curParen !is null)
+        {
+            ruleParen = curParen.parenFuncName.camel ~ `Paren_` ~ curParen.internalParenFunc.length.to!string;
+        }
+        else
+        {
+            ruleParen = curFunc.ruleName.camel ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string;
+        }
+        if (node.children.length > 1)
+        {
+            auto operatorNode = cast(ASTNonTerminal)node.children[1];
+            auto op = (cast(ASTTerminal)(operatorNode.children[0])).token;
+            final switch (op)
+            {
+            case "*":
+                sequence ~= `        while (` ~ ruleParen ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `        }` ~ "\n";
+                break;
+            case "+":
+                sequence ~= `        if (` ~ ruleParen ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `            while (` ~ ruleParen ~ `())` ~ "\n";
+                sequence ~= `            {` ~ "\n";
+                sequence ~= `            }` ~ "\n";
+                sequence ~= `        }` ~ "\n";
+                sequence ~= `        else` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `            index = saveIndex;` ~ "\n";
+                sequence ~= `            return false;` ~ "\n";
+                sequence ~= `        }` ~ "\n";
+                break;
+            case "?":
+                sequence ~= `        if (` ~ ruleParen ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                sequence ~= `        }` ~ "\n";
+                break;
+            }
+        }
+        else
+        {
+            sequence ~= `        if (` ~ ruleParen ~ `())` ~ "\n";
+            sequence ~= `        {` ~ "\n";
+            sequence ~= `        }` ~ "\n";
+            sequence ~= `        else` ~ "\n";
+            sequence ~= `        {` ~ "\n";
+            sequence ~= `            index = saveIndex;` ~ "\n";
+            sequence ~= `            return false;` ~ "\n";
+            sequence ~= `        }` ~ "\n";
+        }
+        if (curParen !is null)
+        {
+            curParen.sequences ~= [sequence];
+        }
+        else
+        {
+            curFunc.sequences ~= [sequence];
+        }
+    }
+
+    void visit(ParenNode node)
+    {
+        nodeCounter = "innerCollectedNodes";
+        ParenthizedComponents parent;
+        ParenthizedComponents parenFuncRef;
+        if (curFunc.parenInFuncs.length == 0 || curFunc.parenInFuncs[$-1].exited == true)
+        {
+            curFunc.parenInFuncs ~= new ParenthizedComponents();
+            parenFuncRef = curFunc.parenInFuncs[$-1];
+            string parenFuncName = curFunc.ruleName.camel ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string;
+            parenFuncRef.parenFuncName = parenFuncName;
+        }
+        else if (curFunc.parenInFuncs[$-1].exited == false)
+        {
+            parenFuncRef = curFunc.parenInFuncs[$-1];
+            string parenFuncName;
+            string[] funcNameExtensions;
+            if (parenFuncRef.internalParenFunc.length == 0)
+            {
+                parent = parenFuncRef;
+                parenFuncRef.internalParenFunc ~= new ParenthizedComponents();
+                parenFuncRef = parenFuncRef.internalParenFunc[$-1];
+                parenFuncRef.parenFuncDepth = 1;
+                funcNameExtensions ~= "Paren_1";
+            }
+            else
+            {
+                uint depth = 0;
+                while (parenFuncRef.internalParenFunc.length > 0
+                    && parenFuncRef.internalParenFunc[$-1].exited == false)
+                {
+                    funcNameExtensions ~= "Paren_" ~ (parenFuncRef.internalParenFunc.length + 1).to!string;
+                    parent = parenFuncRef;
+                    parenFuncRef = parenFuncRef.internalParenFunc[$-1];
+                    depth++;
+                }
+                funcNameExtensions ~= "Paren_" ~ (parenFuncRef.internalParenFunc.length + 1).to!string;
+                parent = parenFuncRef;
+                parenFuncRef.internalParenFunc ~= new ParenthizedComponents();
+                parenFuncRef = parenFuncRef.internalParenFunc[$-1];
+                parenFuncRef.parenFuncDepth = depth;
+            }
+            parenFuncName = curFunc.ruleName.camel ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string;
+            foreach (ext; funcNameExtensions)
+            {
+                parenFuncName ~= ext;
+            }
+            parenFuncRef.parenFuncName = parenFuncName;
+        }
+        curParen = parenFuncRef;
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        parenFuncRef.exited = true;
+        curParen = parent;
+        if (curParen is null)
+        {
+            nodeCounter = "collectedNodes";
+        }
     }
 
     void visit(PrunedNode node)
@@ -127,11 +271,11 @@ class GenParser : Visitor
                 sequence ~= `            {` ~ "\n";
                 sequence ~= `                stack ~= child;` ~ "\n";
                 sequence ~= `            }` ~ "\n";
-                sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
                 }
                 else
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -150,11 +294,11 @@ class GenParser : Visitor
                 sequence ~= `            {` ~ "\n";
                 sequence ~= `                stack ~= child;` ~ "\n";
                 sequence ~= `            }` ~ "\n";
-                sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
                 }
                 else
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `            while (` ~ ruleName.camel ~ `())` ~ "\n";
                 sequence ~= `            {` ~ "\n";
@@ -170,17 +314,17 @@ class GenParser : Visitor
                 sequence ~= `                {` ~ "\n";
                 sequence ~= `                    stack ~= child;` ~ "\n";
                 sequence ~= `                }` ~ "\n";
-                sequence ~= `                collectedNodes += tempNode.children.length;` ~ "\n";
+                sequence ~= `                ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
                 }
                 else
                 {
-                sequence ~= `                collectedNodes++;` ~ "\n";
+                sequence ~= `                ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `            }` ~ "\n";
                 sequence ~= `        }` ~ "\n";
                 sequence ~= `        else` ~ "\n";
                 sequence ~= `        {` ~ "\n";
-                sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
                 sequence ~= `            index = saveIndex;` ~ "\n";
                 sequence ~= `            return false;` ~ "\n";
                 sequence ~= `        }` ~ "\n";
@@ -200,11 +344,11 @@ class GenParser : Visitor
                 sequence ~= `            {` ~ "\n";
                 sequence ~= `                stack ~= child;` ~ "\n";
                 sequence ~= `            }` ~ "\n";
-                sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
                 }
                 else
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -226,21 +370,28 @@ class GenParser : Visitor
             sequence ~= `            {` ~ "\n";
             sequence ~= `                stack ~= child;` ~ "\n";
             sequence ~= `            }` ~ "\n";
-            sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+            sequence ~= `            ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
             }
             else
             {
-            sequence ~= `            collectedNodes++;` ~ "\n";
+            sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
             }
             sequence ~= `        }` ~ "\n";
             sequence ~= `        else` ~ "\n";
             sequence ~= `        {` ~ "\n";
-            sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+            sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
             sequence ~= `            index = saveIndex;` ~ "\n";
             sequence ~= `            return false;` ~ "\n";
             sequence ~= `        }` ~ "\n";
         }
-        curFunc.sequences ~= [sequence];
+        if (curParen !is null)
+        {
+            curParen.sequences ~= [sequence];
+        }
+        else
+        {
+            curFunc.sequences ~= [sequence];
+        }
     }
 
     void visit(TerminalWithOpNode node)
@@ -251,6 +402,15 @@ class GenParser : Visitor
             return;
         }
         string sequence = "";
+        string ruleLiteral;
+        if (curParen !is null)
+        {
+            ruleLiteral = curParen.parenFuncName.camel ~ `Literal_` ~ curParen.termInFuncs.length.to!string;
+        }
+        else
+        {
+            ruleLiteral = curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string;
+        }
         if (node.children.length > 1)
         {
             auto operatorNode = cast(ASTNonTerminal)node.children[1];
@@ -258,42 +418,42 @@ class GenParser : Visitor
             final switch (op)
             {
             case "*":
-                sequence ~= `        while (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        while (` ~ ruleLiteral ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
             case "+":
-                sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ ruleLiteral ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
-                sequence ~= `            while (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `            while (` ~ ruleLiteral ~ `())` ~ "\n";
                 sequence ~= `            {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
-                sequence ~= `                collectedNodes++;` ~ "\n";
+                sequence ~= `                ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `            }` ~ "\n";
                 sequence ~= `        }` ~ "\n";
                 sequence ~= `        else` ~ "\n";
                 sequence ~= `        {` ~ "\n";
-                sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+                sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
                 sequence ~= `            index = saveIndex;` ~ "\n";
                 sequence ~= `            return false;` ~ "\n";
                 sequence ~= `        }` ~ "\n";
                 break;
             case "?":
-                sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        if (` ~ ruleLiteral ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -301,21 +461,28 @@ class GenParser : Visitor
         }
         else
         {
-            sequence ~= `        if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+            sequence ~= `        if (` ~ ruleLiteral ~ `())` ~ "\n";
             sequence ~= `        {` ~ "\n";
             if (status != NodeStatus.PRUNED)
             {
-            sequence ~= `            collectedNodes++;` ~ "\n";
+            sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
             }
             sequence ~= `        }` ~ "\n";
             sequence ~= `        else` ~ "\n";
             sequence ~= `        {` ~ "\n";
-            sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+            sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
             sequence ~= `            index = saveIndex;` ~ "\n";
             sequence ~= `            return false;` ~ "\n";
             sequence ~= `        }` ~ "\n";
         }
-        curFunc.sequences ~= [sequence];
+        if (curParen !is null)
+        {
+            curParen.sequences ~= [sequence];
+        }
+        else
+        {
+            curFunc.sequences ~= [sequence];
+        }
     }
 
     void visit(RuleSegmentNode node)
@@ -328,7 +495,16 @@ class GenParser : Visitor
         auto terminalTypeNode = cast(ASTNonTerminal)node.children[0];
         auto terminal = (cast(ASTTerminal)(terminalTypeNode.children[0])).token;
         string terminalFunc = "";
-        terminalFunc ~= `        bool ` ~ curFunc.ruleName.camel ~ `Literal_` ~ (curFunc.termInFuncs.length + 1).to!string ~ `()` ~ "\n";
+        string ruleLiteral;
+        if (curParen !is null)
+        {
+            ruleLiteral = curParen.parenFuncName.camel ~ `Literal_` ~ (curParen.termInFuncs.length + 1).to!string;
+        }
+        else
+        {
+            ruleLiteral = curFunc.ruleName.camel ~ `Literal_` ~ (curFunc.termInFuncs.length + 1).to!string;
+        }
+        terminalFunc ~= `        bool ` ~ ruleLiteral ~ `()` ~ "\n";
         terminalFunc ~= `        {` ~ "\n";
         terminalFunc ~= `            debug (TRACE) mixin(tracer);` ~ "\n";
         terminalFunc ~= "            auto reg = ctRegex!(`^" ~ terminal[1..$-1] ~ "`);" ~ "\n";
@@ -354,7 +530,14 @@ class GenParser : Visitor
         terminalFunc ~= `            }` ~ "\n";
         terminalFunc ~= `            return true;` ~ "\n";
         terminalFunc ~= `        }` ~ "\n";
-        curFunc.termInFuncs ~= [terminalFunc];
+        if (curParen !is null)
+        {
+            curParen.termInFuncs ~= [terminalFunc];
+        }
+        else
+        {
+            curFunc.termInFuncs ~= [terminalFunc];
+        }
     }
 
     void visit(OrChainNode node)
@@ -368,14 +551,35 @@ class GenParser : Visitor
             auto childNode = cast(ASTNonTerminal)child;
             childNode.accept(this);
             childNode = cast(ASTNonTerminal)childNode.children[0];
+            string ruleLiteral;
+            string ruleParen;
+            if (curParen !is null)
+            {
+                ruleLiteral = curParen.parenFuncName.camel ~ `Literal_` ~ curParen.termInFuncs.length.to!string;
+                ruleParen = curParen.parenFuncName.camel ~ `Paren_` ~ curParen.internalParenFunc.length.to!string;
+            }
+            else
+            {
+                ruleLiteral = curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string;
+                ruleParen = curFunc.ruleName.camel ~ `Paren_` ~ curFunc.parenInFuncs.length.to!string;
+            }
             switch (childNode.name)
             {
             case "TERMINAL":
-                sequence ~= `        ` ~ elseIf ~ `if (` ~ curFunc.ruleName.camel ~ `Literal_` ~ curFunc.termInFuncs.length.to!string ~ `())` ~ "\n";
+                sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleLiteral ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
                 if (status != NodeStatus.PRUNED)
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
+                }
+                sequence ~= `        }` ~ "\n";
+                break;
+            case "PAREN":
+                sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleParen ~ `())` ~ "\n";
+                sequence ~= `        {` ~ "\n";
+                if (status != NodeStatus.PRUNED)
+                {
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -395,11 +599,11 @@ class GenParser : Visitor
                 sequence ~= `            {` ~ "\n";
                 sequence ~= `                stack ~= child;` ~ "\n";
                 sequence ~= `            }` ~ "\n";
-                sequence ~= `            collectedNodes += tempNode.children.length;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ ` += tempNode.children.length;` ~ "\n";
                 }
                 else
                 {
-                sequence ~= `            collectedNodes++;` ~ "\n";
+                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
                 }
                 sequence ~= `        }` ~ "\n";
                 break;
@@ -410,11 +614,18 @@ class GenParser : Visitor
         }
         sequence ~= `        else` ~ "\n";
         sequence ~= `        {` ~ "\n";
-        sequence ~= `            stack = stack[0..$-collectedNodes];` ~ "\n";
+        sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
         sequence ~= `            index = saveIndex;` ~ "\n";
         sequence ~= `            return false;` ~ "\n";
         sequence ~= `        }` ~ "\n";
-        curFunc.sequences ~= [sequence];
+        if (curParen !is null)
+        {
+            curParen.sequences ~= [sequence];
+        }
+        else
+        {
+            curFunc.sequences ~= [sequence];
+        }
         inOrChain = false;
     }
 
@@ -433,12 +644,75 @@ private:
     ASTNode topNode;
     string genCode;
     FunctionComponents curFunc;
+    ParenthizedComponents curParen;
     ParserDefinition parserDef;
+    string nodeCounter;
 
     enum NodeStatus {PRUNED, ELEVATED, NORMAL}
     static NodeStatus status = NodeStatus.NORMAL;
     static inOrChain = false;
     static firstRule = true;
+
+    class ParenthizedComponents
+    {
+        ParenthizedComponents[] internalParenFunc;
+        uint parenFuncDepth;
+        string parenFuncName;
+        string header;
+        string footer;
+        string func;
+        string[] termInFuncs;
+        string[] sequences;
+        bool exited;
+
+        this ()
+        {
+            this.exited = false;
+            this.parenFuncDepth = 1;
+        }
+
+        void genHeaderFooter()
+        {
+            header = "";
+            header ~= `    bool ` ~ parenFuncName.camel ~ "()\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
+            header ~= `        uint saveIndex = index;` ~ "\n";
+
+            // We just want to leave the nodes on the stack
+
+            footer ~= `        collectedNodes += innerCollectedNodes;` ~ "\n";
+            footer ~= `        return true;` ~ "\n";
+            footer ~= `    }` ~ "\n";
+        }
+
+        void compileFunction()
+        {
+            string indent = "";
+            foreach (x; 0..parenFuncDepth)
+            {
+                indent ~= "    ";
+            }
+            genHeaderFooter();
+            func = "";
+            func ~= header.prefixToChunk(indent);
+            foreach (terminalFunc; termInFuncs)
+            {
+                func ~= terminalFunc.prefixToChunk(indent);
+            }
+            foreach (parenFunc; internalParenFunc)
+            {
+                parenFunc.compileFunction();
+                func ~= parenFunc.func.prefixToChunk(indent);
+            }
+            func ~= (`        uint innerCollectedNodes = 0;` ~ "\n").prefixToChunk(indent);
+            foreach (seq; sequences)
+            {
+                func ~= seq.prefixToChunk(indent);
+            }
+            func ~= footer.prefixToChunk(indent);
+        }
+    }
 
     class ParserDefinition
     {
@@ -484,16 +758,6 @@ private:
             header ~= `    string source;` ~ "\n";
             header ~= `    uint index;` ~ "\n";
             header ~= `    ASTNode[] stack;` ~ "\n";
-            header ~= `    struct ParenResult` ~ "\n";
-            header ~= `    {` ~ "\n";
-            header ~= `        uint collectedNodes;` ~ "\n";
-            header ~= `        bool isSuccess;` ~ "\n";
-            header ~= `        this (uint collectedNodes, bool isSuccess)` ~ "\n";
-            header ~= `        {` ~ "\n";
-            header ~= `            this.collectedNodes = collectedNodes;` ~ "\n";
-            header ~= `            this.isSuccess = isSuccess;` ~ "\n";
-            header ~= `        }` ~ "\n";
-            header ~= `    }` ~ "\n";
             header ~= `    debug (TRACE)` ~ "\n";
             header ~= `    {` ~ "\n";
             header ~= `        string traceIndent;` ~ "\n";
@@ -687,7 +951,7 @@ private:
         string ruleName;
         string header;
         string footer;
-        string[] parenInFuncs;
+        ParenthizedComponents[] parenInFuncs;
         string[] termInFuncs;
         string[] sequences;
 
@@ -703,6 +967,7 @@ private:
             header ~= `    {` ~ "\n";
             header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
             header ~= `        uint saveIndex = index;` ~ "\n";
+            header ~= `        uint collectedNodes = 0;` ~ "\n";
 
             footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";
@@ -726,13 +991,9 @@ private:
             }
             foreach (parenFunc; parenInFuncs)
             {
-                func ~= parenFunc;
+                parenFunc.compileFunction();
+                func ~= parenFunc.func;
             }
-            if (parenInFuncs.length > 0)
-            {
-                func ~= `        ParenResult* result;` ~ "\n";
-            }
-            func ~= `        uint collectedNodes = 0;` ~ "\n";
             foreach (seq; sequences)
             {
                 func ~= seq;
@@ -808,6 +1069,8 @@ int main(string[] argv)
     auto topNode = parser.parse();
     if (topNode !is null)
     {
+        //auto printer = new PrintVisitor();
+        //printer.visit(cast(GrammarNode)topNode);
         auto context = new GenParser(topNode);
         auto code = context.generate();
         writeln(code);

@@ -6,17 +6,19 @@ interface Visitor
     void visit(GrammarNode node);
     void visit(RuleNode node);
     void visit(PrunedElevatedNormalNode node);
+    void visit(ParenNode node);
     void visit(PrunedNode node);
     void visit(ElevatedNode node);
     void visit(NormalNode node);
-    void visit(OrChainNormalNode node);
     void visit(PrunedPlainNode node);
     void visit(ElevatedPlainNode node);
+    void visit(OrChainNormalNode node);
     void visit(TerminalOrRulenameNode node);
     void visit(PrunedElevatedForChainNode node);
     void visit(RuleSegmentNode node);
     void visit(RuleNameWithOpNode node);
     void visit(TerminalWithOpNode node);
+    void visit(ParenWithOpNode node);
     void visit(OrChainNode node);
     void visit(OrChainExtraNode node);
     void visit(UnaryOperatorNode node);
@@ -64,6 +66,16 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
+    void visit(ParenNode node)
+    {
+        writeln(indent, "PARENNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
     void visit(PrunedNode node)
     {
         writeln(indent, "PRUNEDNODE");
@@ -94,16 +106,6 @@ class PrintVisitor : Visitor
         }
         indent = indent[0..$-2];
     }
-    void visit(OrChainNormalNode node)
-    {
-        writeln(indent, "ORCHAINNORMALNODE");
-        indent ~= "  ";
-        foreach (child; node.children)
-        {
-            child.accept(this);
-        }
-        indent = indent[0..$-2];
-    }
     void visit(PrunedPlainNode node)
     {
         writeln(indent, "PRUNEDPLAINNODE");
@@ -117,6 +119,16 @@ class PrintVisitor : Visitor
     void visit(ElevatedPlainNode node)
     {
         writeln(indent, "ELEVATEDPLAINNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(OrChainNormalNode node)
+    {
+        writeln(indent, "ORCHAINNORMALNODE");
         indent ~= "  ";
         foreach (child; node.children)
         {
@@ -167,6 +179,16 @@ class PrintVisitor : Visitor
     void visit(TerminalWithOpNode node)
     {
         writeln(indent, "TERMINALWITHOPNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(ParenWithOpNode node)
+    {
+        writeln(indent, "PARENWITHOPNODE");
         indent ~= "  ";
         foreach (child; node.children)
         {

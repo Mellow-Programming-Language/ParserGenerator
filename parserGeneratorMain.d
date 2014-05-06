@@ -547,10 +547,13 @@ class GenParser : Visitor
         string sequence = "";
         foreach (child; node.children)
         {
-            // PrunedPlain or ElevatedPlain or OrChainNormal
+            // PrunedPlain or ElevatedPlain or OrChainNormal or Paren
             auto childNode = cast(ASTNonTerminal)child;
             childNode.accept(this);
-            childNode = cast(ASTNonTerminal)childNode.children[0];
+            if (childNode.name != "PAREN")
+            {
+                childNode = cast(ASTNonTerminal)childNode.children[0];
+            }
             string ruleLiteral;
             string ruleParen;
             if (curParen !is null)
@@ -577,10 +580,6 @@ class GenParser : Visitor
             case "PAREN":
                 sequence ~= `        ` ~ elseIf ~ `if (` ~ ruleParen ~ `())` ~ "\n";
                 sequence ~= `        {` ~ "\n";
-                if (status != NodeStatus.PRUNED)
-                {
-                sequence ~= `            ` ~ nodeCounter ~ `++;` ~ "\n";
-                }
                 sequence ~= `        }` ~ "\n";
                 break;
             case "RULENAME":

@@ -39,10 +39,11 @@ string escapeLiterals(string str)
         case '(':
         case ')':
         case '[':
+        case ']':
         case '{':
+        case '}':
         case '|':
         case '-':
-        case ']':
         case '\\':
             result ~= "\\" ~ ch;
             break;

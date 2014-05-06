@@ -235,17 +235,6 @@ class OrChainNode : ASTNonTerminal
         v.visit(this);
     }
 }
-class OrChainExtraNode : ASTNonTerminal
-{
-    this ()
-    {
-        this.name = "ORCHAINEXTRA";
-    }
-    override void accept(Visitor v)
-    {
-        v.visit(this);
-    }
-}
 class UnaryOperatorNode : ASTNonTerminal
 {
     this ()
@@ -1153,63 +1142,6 @@ private:
         {
         }
         auto nonTerminal = new OrChainNode();
-        foreach (node; stack[$-collectedNodes..$])
-        {
-            nonTerminal.addChild(node);
-        }
-        stack = stack[0..$-collectedNodes];
-        stack ~= nonTerminal;
-        return true;
-    }
-    bool orChainExtra()
-    {
-        debug (TRACE) mixin(tracer);
-        uint saveIndex = index;
-        uint collectedNodes = 0;
-        bool orChainExtraLiteral_1()
-        {
-            debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\|`);
-            auto mat = match(source[index..$], reg);
-            if (mat)
-            {
-                debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
-                index += mat.captures[0].length;
-                consumeWhitespace();
-            }
-            else
-            {
-                debug (TRACE) writeln(traceIndent, "  No match.");
-                return false;
-            }
-            return true;
-        }
-        if (orChainExtraLiteral_1())
-        {
-        }
-        else
-        {
-            stack = stack[0..$-collectedNodes];
-            index = saveIndex;
-            return false;
-        }
-        if (prunedElevatedForChain())
-        {
-            auto tempNode = cast(ASTNonTerminal)(stack[$-1]);
-            stack = stack[0..$-1];
-            foreach (child; tempNode.children)
-            {
-                stack ~= child;
-            }
-            collectedNodes += tempNode.children.length;
-        }
-        else
-        {
-            stack = stack[0..$-collectedNodes];
-            index = saveIndex;
-            return false;
-        }
-        auto nonTerminal = new OrChainExtraNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);

@@ -20,7 +20,6 @@ interface Visitor
     void visit(TerminalWithOpNode node);
     void visit(ParenWithOpNode node);
     void visit(OrChainNode node);
-    void visit(OrChainExtraNode node);
     void visit(UnaryOperatorNode node);
     void visit(TerminalNode node);
     void visit(TerminalLiteralNode node);
@@ -199,16 +198,6 @@ class PrintVisitor : Visitor
     void visit(OrChainNode node)
     {
         writeln(indent, "ORCHAINNODE");
-        indent ~= "  ";
-        foreach (child; node.children)
-        {
-            child.accept(this);
-        }
-        indent = indent[0..$-2];
-    }
-    void visit(OrChainExtraNode node)
-    {
-        writeln(indent, "ORCHAINEXTRANODE");
         indent ~= "  ";
         foreach (child; node.children)
         {

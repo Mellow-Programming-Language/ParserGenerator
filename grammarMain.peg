@@ -42,8 +42,6 @@ ParenWithOp :: Paren UnaryOperator ?;
 
 OrChain :: ^PrunedElevatedForChain #"|" ^PrunedElevatedForChain (#"|" ^PrunedElevatedForChain)*;
 
-OrChainExtra :: #"|" ^PrunedElevatedForChain;
-
 UnaryOperator :: "*"
                | "+"
                | "?";

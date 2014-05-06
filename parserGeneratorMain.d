@@ -667,7 +667,6 @@ class GenParser : Visitor
     void visit(PrunedElevatedNormalNode node) {}
     void visit(TerminalOrRulenameNode node) {}
     void visit(PrunedElevatedForChainNode node) {}
-    void visit(OrChainExtraNode node) {}
     void visit(UnaryOperatorNode node) {}
     void visit(TerminalRegexNode node) {}
     void visit(RuleNameNode node) {}

@@ -7,15 +7,15 @@ PrunedElevatedNormal :: Normal
                       | Pruned
                       | Elevated
                       ;
-Paren :: #"\(" ^PrunedElevatedNormal* #"\)";
+Paren :: #"(" ^PrunedElevatedNormal* #")";
 Pruned :: #"#" RuleSegment ;
-Elevated :: #"\^" RuleNameWithOp ;
+Elevated :: #"^" RuleNameWithOp ;
 Normal :: OrChain
         | RuleSegment
         ;
 
 PrunedPlain :: #"#" ^TerminalOrRulename ;
-ElevatedPlain :: #"\^" RuleName ;
+ElevatedPlain :: #"^" RuleName ;
 OrChainNormal :: RuleName
                | Terminal
                ;
@@ -40,13 +40,13 @@ TerminalWithOp :: Terminal UnaryOperator ?;
 
 ParenWithOp :: Paren UnaryOperator ?;
 
-OrChain :: ^PrunedElevatedForChain #"\|" ^PrunedElevatedForChain (#"\|" ^PrunedElevatedForChain)*;
+OrChain :: ^PrunedElevatedForChain #"|" ^PrunedElevatedForChain (#"|" ^PrunedElevatedForChain)*;
 
-OrChainExtra :: #"\|" ^PrunedElevatedForChain;
+OrChainExtra :: #"|" ^PrunedElevatedForChain;
 
-UnaryOperator :: "\*"
-               | "\+"
-               | "\?";
+UnaryOperator :: "*"
+               | "+"
+               | "?";
 
 Terminal :: TerminalLiteral
           | TerminalRegex ;

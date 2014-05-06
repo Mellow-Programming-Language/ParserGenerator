@@ -23,6 +23,36 @@ string prefixToChunk(string src, string prefix)
     return newSrc;
 }
 
+string escapeLiterals(string str)
+{
+    string result = "";
+    foreach (ch; str)
+    {
+        switch (ch)
+        {
+        case '.':
+        case '^':
+        case '$':
+        case '*':
+        case '+':
+        case '?':
+        case '(':
+        case ')':
+        case '[':
+        case '{':
+        case '|':
+        case '-':
+        case ']':
+        case '\\':
+            result ~= "\\" ~ ch;
+            break;
+        default:
+            result ~= ch;
+        }
+    }
+    return result;
+}
+
 class GenParser : Visitor
 {
     this (ASTNode topNode)
@@ -494,6 +524,11 @@ class GenParser : Visitor
     {
         auto terminalTypeNode = cast(ASTNonTerminal)node.children[0];
         auto terminal = (cast(ASTTerminal)(terminalTypeNode.children[0])).token;
+        string regExpr = terminal[1..$-1];
+        if (terminalTypeNode.name == "TERMINALLITERAL")
+        {
+            regExpr = regExpr.escapeLiterals();
+        }
         string terminalFunc = "";
         string ruleLiteral;
         if (curParen !is null)
@@ -507,7 +542,7 @@ class GenParser : Visitor
         terminalFunc ~= `        bool ` ~ ruleLiteral ~ `()` ~ "\n";
         terminalFunc ~= `        {` ~ "\n";
         terminalFunc ~= `            debug (TRACE) mixin(tracer);` ~ "\n";
-        terminalFunc ~= "            auto reg = ctRegex!(`^" ~ terminal[1..$-1] ~ "`);" ~ "\n";
+        terminalFunc ~= "            auto reg = ctRegex!(`^" ~ regExpr ~ "`);" ~ "\n";
         terminalFunc ~= `            auto mat = match(source[index..$], reg);` ~ "\n";
         terminalFunc ~= `            if (mat)` ~ "\n";
         terminalFunc ~= `            {` ~ "\n";

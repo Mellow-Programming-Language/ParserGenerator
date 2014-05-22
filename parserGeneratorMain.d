@@ -180,6 +180,10 @@ class GenParser : Visitor
 
     void visit(ParenNode node)
     {
+        // Even though we're currently inside an or chain at -some- depth, we
+        // aren't within an or chain (yet) within this parenthized chunk
+        auto inOrChainCur = inOrChain;
+        inOrChain = false;
         nodeCounter = "innerCollectedNodes";
         ParenthizedComponents parent;
         ParenthizedComponents parenFuncRef;
@@ -238,6 +242,7 @@ class GenParser : Visitor
         {
             nodeCounter = "collectedNodes";
         }
+        inOrChain = inOrChainCur;
     }
 
     void visit(PrunedNode node)

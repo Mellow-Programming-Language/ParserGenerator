@@ -1108,8 +1108,11 @@ int main(string[] argv)
     auto topNode = parser.parse();
     if (topNode !is null)
     {
-        //auto printer = new PrintVisitor();
-        //printer.visit(cast(GrammarNode)topNode);
+        debug (TRACE)
+        {
+            auto printer = new PrintVisitor();
+            printer.visit(cast(GrammarNode)topNode);
+        }
         auto context = new GenParser(topNode);
         auto code = context.generate();
         writeln(code);

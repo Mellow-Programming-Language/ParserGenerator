@@ -367,7 +367,7 @@ private:
         bool ruleLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^::`);
+            auto reg = ctRegex!(`^(?:::)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -385,7 +385,7 @@ private:
         bool ruleLiteral_2()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^;`);
+            auto reg = ctRegex!(`^(?:;)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -507,7 +507,7 @@ private:
         bool parenLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\(`);
+            auto reg = ctRegex!(`^(?:\()`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -525,7 +525,7 @@ private:
         bool parenLiteral_2()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\)`);
+            auto reg = ctRegex!(`^(?:\))`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -585,7 +585,7 @@ private:
         bool prunedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^#`);
+            auto reg = ctRegex!(`^(?:#)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -636,7 +636,7 @@ private:
         bool elevatedLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\^`);
+            auto reg = ctRegex!(`^(?:\^)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -715,7 +715,7 @@ private:
         bool prunedPlainLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^#`);
+            auto reg = ctRegex!(`^(?:#)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -772,7 +772,7 @@ private:
         bool elevatedPlainLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\^`);
+            auto reg = ctRegex!(`^(?:\^)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1031,7 +1031,7 @@ private:
         bool orChainLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\|`);
+            auto reg = ctRegex!(`^(?:\|)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1053,7 +1053,7 @@ private:
             bool orChainParen_1Literal_1()
             {
                 debug (TRACE) mixin(tracer);
-                auto reg = ctRegex!(`^\|`);
+                auto reg = ctRegex!(`^(?:\|)`);
                 auto mat = match(source[index..$], reg);
                 if (mat)
                 {
@@ -1158,7 +1158,7 @@ private:
         bool unaryOperatorLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\*`);
+            auto reg = ctRegex!(`^(?:\*)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1178,7 +1178,7 @@ private:
         bool unaryOperatorLiteral_2()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\+`);
+            auto reg = ctRegex!(`^(?:\+)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1198,7 +1198,7 @@ private:
         bool unaryOperatorLiteral_3()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\?`);
+            auto reg = ctRegex!(`^(?:\?)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1278,7 +1278,7 @@ private:
         bool terminalLiteralLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^"(?:\\.|[^"\\])*"`);
+            auto reg = ctRegex!(`^(?:"(?:\\.|[^"\\])*")`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1322,7 +1322,7 @@ private:
         bool terminalRegexLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^\/(?:\\.|[^\/\\])*\/`);
+            auto reg = ctRegex!(`^(?:\/(?:\\.|[^\/\\])*\/)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {
@@ -1366,7 +1366,7 @@ private:
         bool ruleNameLiteral_1()
         {
             debug (TRACE) mixin(tracer);
-            auto reg = ctRegex!(`^[a-zA-Z_][a-zA-Z0-9_]*`);
+            auto reg = ctRegex!(`^(?:[a-zA-Z_][a-zA-Z0-9_]*)`);
             auto mat = match(source[index..$], reg);
             if (mat)
             {

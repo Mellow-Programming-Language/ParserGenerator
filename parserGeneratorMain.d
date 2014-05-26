@@ -548,7 +548,7 @@ class GenParser : Visitor
         terminalFunc ~= `        bool ` ~ ruleLiteral ~ `()` ~ "\n";
         terminalFunc ~= `        {` ~ "\n";
         terminalFunc ~= `            debug (TRACE) mixin(tracer);` ~ "\n";
-        terminalFunc ~= "            auto reg = ctRegex!(`^" ~ regExpr ~ "`);" ~ "\n";
+        terminalFunc ~= "            auto reg = ctRegex!(`^(?:" ~ regExpr ~ ")`);" ~ "\n";
         terminalFunc ~= `            auto mat = match(source[index..$], reg);` ~ "\n";
         terminalFunc ~= `            if (mat)` ~ "\n";
         terminalFunc ~= `            {` ~ "\n";

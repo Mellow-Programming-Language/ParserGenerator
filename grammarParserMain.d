@@ -268,6 +268,17 @@ class TerminalLiteralNode : ASTNonTerminal
         v.visit(this);
     }
 }
+class TerminalLiteralNoConsumeNode : ASTNonTerminal
+{
+    this ()
+    {
+        this.name = "TERMINALLITERALNOCONSUME";
+    }
+    override void accept(Visitor v)
+    {
+        v.visit(this);
+    }
+}
 class TerminalRegexNode : ASTNonTerminal
 {
     this ()
@@ -1251,6 +1262,10 @@ private:
         {
             collectedNodes++;
         }
+        else if (terminalLiteralNoConsume())
+        {
+            collectedNodes++;
+        }
         else if (terminalRegex())
         {
             collectedNodes++;
@@ -1306,6 +1321,50 @@ private:
             return false;
         }
         auto nonTerminal = new TerminalLiteralNode();
+        foreach (node; stack[$-collectedNodes..$])
+        {
+            nonTerminal.addChild(node);
+        }
+        stack = stack[0..$-collectedNodes];
+        stack ~= nonTerminal;
+        return true;
+    }
+    bool terminalLiteralNoConsume()
+    {
+        debug (TRACE) mixin(tracer);
+        uint saveIndex = index;
+        uint collectedNodes = 0;
+        bool terminalLiteralNoConsumeLiteral_1()
+        {
+            debug (TRACE) mixin(tracer);
+            auto reg = ctRegex!(`^(?:'(?:\\.|[^'\\])*')`);
+            auto mat = match(source[index..$], reg);
+            if (mat)
+            {
+                debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
+                auto terminal = new ASTTerminal(mat.captures[0], index);
+                index += mat.captures[0].length;
+                consumeWhitespace();
+                stack ~= terminal;
+            }
+            else
+            {
+                debug (TRACE) writeln(traceIndent, "  No match.");
+                return false;
+            }
+            return true;
+        }
+        if (terminalLiteralNoConsumeLiteral_1())
+        {
+            collectedNodes++;
+        }
+        else
+        {
+            stack = stack[0..$-collectedNodes];
+            index = saveIndex;
+            return false;
+        }
+        auto nonTerminal = new TerminalLiteralNoConsumeNode();
         foreach (node; stack[$-collectedNodes..$])
         {
             nonTerminal.addChild(node);

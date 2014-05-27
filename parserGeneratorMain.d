@@ -531,9 +531,15 @@ class GenParser : Visitor
         auto terminalTypeNode = cast(ASTNonTerminal)node.children[0];
         auto terminal = (cast(ASTTerminal)(terminalTypeNode.children[0])).token;
         string regExpr = terminal[1..$-1];
-        if (terminalTypeNode.name == "TERMINALLITERAL")
+        auto consume = true;
+        if (terminalTypeNode.name == "TERMINALLITERAL"
+            || terminalTypeNode.name == "TERMINALLITERALNOCONSUME")
         {
             regExpr = regExpr.escapeLiterals();
+        }
+        if (terminalTypeNode.name == "TERMINALLITERALNOCONSUME")
+        {
+            consume = false;
         }
         string terminalFunc = "";
         string ruleLiteral;
@@ -558,7 +564,10 @@ class GenParser : Visitor
         terminalFunc ~= `                auto terminal = new ASTTerminal(mat.captures[0], index);` ~ "\n";
         }
         terminalFunc ~= `                index += mat.captures[0].length;` ~ "\n";
+        if (consume)
+        {
         terminalFunc ~= `                consumeWhitespace();` ~ "\n";
+        }
         if (status != NodeStatus.PRUNED)
         {
         terminalFunc ~= `                stack ~= terminal;` ~ "\n";
@@ -676,6 +685,7 @@ class GenParser : Visitor
     void visit(TerminalRegexNode node) {}
     void visit(RuleNameNode node) {}
     void visit(TerminalLiteralNode node) {}
+    void visit(TerminalLiteralNoConsumeNode node) {}
     void visit(ASTTerminal node) {}
 
 private:

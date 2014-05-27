@@ -47,9 +47,12 @@ UnaryOperator :: "*"
                | "?";
 
 Terminal :: TerminalLiteral
+          | TerminalLiteralNoConsume
           | TerminalRegex ;
 
 TerminalLiteral :: /"(?:\\.|[^"\\])*"/ ;
+
+TerminalLiteralNoConsume :: /'(?:\\.|[^'\\])*'/ ;
 
 TerminalRegex :: /\/(?:\\.|[^\/\\])*\// ;
 

@@ -23,6 +23,7 @@ interface Visitor
     void visit(UnaryOperatorNode node);
     void visit(TerminalNode node);
     void visit(TerminalLiteralNode node);
+    void visit(TerminalLiteralNoConsumeNode node);
     void visit(TerminalRegexNode node);
     void visit(RuleNameNode node);
     void visit(ASTTerminal node);
@@ -228,6 +229,16 @@ class PrintVisitor : Visitor
     void visit(TerminalLiteralNode node)
     {
         writeln(indent, "TERMINALLITERALNODE");
+        indent ~= "  ";
+        foreach (child; node.children)
+        {
+            child.accept(this);
+        }
+        indent = indent[0..$-2];
+    }
+    void visit(TerminalLiteralNoConsumeNode node)
+    {
+        writeln(indent, "TERMINALLITERALNOCONSUMENODE");
         indent ~= "  ";
         foreach (child; node.children)
         {

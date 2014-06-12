@@ -874,16 +874,13 @@ private:
 
             nodeClassDefinitions ~= `void printTree(ASTNode node, string indent = "")` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
-            nodeClassDefinitions ~= `    if (cast(ASTNonTerminal)node)` ~ "\n";
-            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `    if (cast(ASTNonTerminal)node) {` ~ "\n";
             nodeClassDefinitions ~= `        writeln(indent, (cast(ASTNonTerminal)node).name);` ~ "\n";
-            nodeClassDefinitions ~= `        foreach (x; (cast(ASTNonTerminal)node).children)` ~ "\n";
-            nodeClassDefinitions ~= `        {` ~ "\n";
+            nodeClassDefinitions ~= `        foreach (x; (cast(ASTNonTerminal)node).children) {` ~ "\n";
             nodeClassDefinitions ~= `            printTree(x, indent ~ "  ");` ~ "\n";
             nodeClassDefinitions ~= `        }` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
-            nodeClassDefinitions ~= `    else if (cast(ASTTerminal)node)` ~ "\n";
-            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `    else if (cast(ASTTerminal)node) {` ~ "\n";
             nodeClassDefinitions ~= `        writeln(indent, "[", (cast(ASTTerminal)node).token, "]: ",` ~ "\n";
             nodeClassDefinitions ~= `            (cast(ASTTerminal)node).index);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
@@ -897,41 +894,47 @@ private:
             nodeClassDefinitions ~= `{` ~ "\n";
             nodeClassDefinitions ~= `    ASTNode[] children;` ~ "\n";
             nodeClassDefinitions ~= `    string name;` ~ "\n";
-            nodeClassDefinitions ~= `    void addChild(ASTNode node)` ~ "\n";
-            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `    void addChild(ASTNode node) {` ~ "\n";
             nodeClassDefinitions ~= `        children ~= node;` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `    Tag getTag() {` ~ "\n";
+            nodeClassDefinitions ~= `        return Tag.ASTNONTERMINAL;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
             nodeClassDefinitions ~= `class ASTTerminal : ASTNode` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
             nodeClassDefinitions ~= `    const string token;` ~ "\n";
             nodeClassDefinitions ~= `    const uint index;` ~ "\n";
-            nodeClassDefinitions ~= `    this (string token, uint index)` ~ "\n";
-            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `    this (string token, uint index) {` ~ "\n";
             nodeClassDefinitions ~= `        this.token = token;` ~ "\n";
             nodeClassDefinitions ~= `        this.index = index;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
-            nodeClassDefinitions ~= `    override void accept(Visitor v)` ~ "\n";
-            nodeClassDefinitions ~= `    {` ~ "\n";
+            nodeClassDefinitions ~= `    override void accept(Visitor v) {` ~ "\n";
             nodeClassDefinitions ~= `        v.visit(this);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
+            string enumVals = `enum Tag {` ~ "\n";
             foreach (func; funcs)
             {
                 string curDef = "";
+                enumVals ~= `    ` ~ func.ruleName.toUpper ~ ",\n";
                 curDef ~= `class ` ~ func.ruleName ~ `Node : ASTNonTerminal` ~ "\n";
                 curDef ~= `{` ~ "\n";
-                curDef ~= `    this ()` ~ "\n";
-                curDef ~= `    {` ~ "\n";
+                curDef ~= `    this () {` ~ "\n";
                 curDef ~= `        this.name = "` ~ func.ruleName.toUpper ~ `";` ~ "\n";
                 curDef ~= `    }` ~ "\n";
-                curDef ~= `    override void accept(Visitor v)` ~ "\n";
-                curDef ~= `    {` ~ "\n";
+                curDef ~= `    override void accept(Visitor v) {` ~ "\n";
                 curDef ~= `        v.visit(this);` ~ "\n";
+                curDef ~= `    }` ~ "\n";
+                curDef ~= `    override Tag getTag() {` ~ "\n";
+                curDef ~= `        return Tag.` ~ func.ruleName.toUpper ~ `;` ~ "\n";
                 curDef ~= `    }` ~ "\n";
                 curDef ~= `}` ~ "\n";
                 nodeClassDefinitions ~= curDef;
             }
+            enumVals ~= `    ASTNONTERMINAL` ~ "\n";
+            enumVals ~= `}` ~ "\n";
+            nodeClassDefinitions ~= enumVals;
         }
 
         void generateVisitorBoilerplate()

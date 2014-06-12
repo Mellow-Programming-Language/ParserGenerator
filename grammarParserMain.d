@@ -6,16 +6,13 @@ import std.algorithm;
 import visitor;
 void printTree(ASTNode node, string indent = "")
 {
-    if (cast(ASTNonTerminal)node)
-    {
+    if (cast(ASTNonTerminal)node) {
         writeln(indent, (cast(ASTNonTerminal)node).name);
-        foreach (x; (cast(ASTNonTerminal)node).children)
-        {
+        foreach (x; (cast(ASTNonTerminal)node).children) {
             printTree(x, indent ~ "  ");
         }
     }
-    else if (cast(ASTTerminal)node)
-    {
+    else if (cast(ASTTerminal)node) {
         writeln(indent, "[", (cast(ASTTerminal)node).token, "]: ",
             (cast(ASTTerminal)node).index);
     }
@@ -29,277 +26,326 @@ abstract class ASTNonTerminal : ASTNode
 {
     ASTNode[] children;
     string name;
-    void addChild(ASTNode node)
-    {
+    void addChild(ASTNode node) {
         children ~= node;
+    }
+    Tag getTag() {
+        return Tag.ASTNONTERMINAL;
     }
 }
 class ASTTerminal : ASTNode
 {
     const string token;
     const uint index;
-    this (string token, uint index)
-    {
+    this (string token, uint index) {
         this.token = token;
         this.index = index;
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
     }
 }
 class GrammarNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "GRAMMAR";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.GRAMMAR;
     }
 }
 class RuleNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "RULE";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.RULE;
     }
 }
 class PrunedElevatedNormalNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PRUNEDELEVATEDNORMAL";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PRUNEDELEVATEDNORMAL;
     }
 }
 class ParenNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PAREN";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PAREN;
     }
 }
 class PrunedNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PRUNED";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PRUNED;
     }
 }
 class ElevatedNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "ELEVATED";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.ELEVATED;
     }
 }
 class NormalNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "NORMAL";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.NORMAL;
     }
 }
 class PrunedPlainNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PRUNEDPLAIN";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PRUNEDPLAIN;
     }
 }
 class ElevatedPlainNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "ELEVATEDPLAIN";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.ELEVATEDPLAIN;
     }
 }
 class OrChainNormalNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "ORCHAINNORMAL";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.ORCHAINNORMAL;
     }
 }
 class TerminalOrRulenameNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINALORRULENAME";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINALORRULENAME;
     }
 }
 class PrunedElevatedForChainNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PRUNEDELEVATEDFORCHAIN";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PRUNEDELEVATEDFORCHAIN;
     }
 }
 class RuleSegmentNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "RULESEGMENT";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.RULESEGMENT;
     }
 }
 class RuleNameWithOpNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "RULENAMEWITHOP";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.RULENAMEWITHOP;
     }
 }
 class TerminalWithOpNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINALWITHOP";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINALWITHOP;
     }
 }
 class ParenWithOpNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "PARENWITHOP";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.PARENWITHOP;
     }
 }
 class OrChainNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "ORCHAIN";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.ORCHAIN;
     }
 }
 class UnaryOperatorNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "UNARYOPERATOR";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.UNARYOPERATOR;
     }
 }
 class TerminalNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINAL";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINAL;
     }
 }
 class TerminalLiteralNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINALLITERAL";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINALLITERAL;
     }
 }
 class TerminalLiteralNoConsumeNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINALLITERALNOCONSUME";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINALLITERALNOCONSUME;
     }
 }
 class TerminalRegexNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "TERMINALREGEX";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
+    }
+    override Tag getTag() {
+        return Tag.TERMINALREGEX;
     }
 }
 class RuleNameNode : ASTNonTerminal
 {
-    this ()
-    {
+    this () {
         this.name = "RULENAME";
     }
-    override void accept(Visitor v)
-    {
+    override void accept(Visitor v) {
         v.visit(this);
     }
+    override Tag getTag() {
+        return Tag.RULENAME;
+    }
+}
+enum Tag {
+    GRAMMAR,
+    RULE,
+    PRUNEDELEVATEDNORMAL,
+    PAREN,
+    PRUNED,
+    ELEVATED,
+    NORMAL,
+    PRUNEDPLAIN,
+    ELEVATEDPLAIN,
+    ORCHAINNORMAL,
+    TERMINALORRULENAME,
+    PRUNEDELEVATEDFORCHAIN,
+    RULESEGMENT,
+    RULENAMEWITHOP,
+    TERMINALWITHOP,
+    PARENWITHOP,
+    ORCHAIN,
+    UNARYOPERATOR,
+    TERMINAL,
+    TERMINALLITERAL,
+    TERMINALLITERALNOCONSUME,
+    TERMINALREGEX,
+    RULENAME,
+    ASTNONTERMINAL
 }
 class Parser
 {

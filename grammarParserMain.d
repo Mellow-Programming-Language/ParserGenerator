@@ -3,6 +3,7 @@ import std.regex;
 import std.string;
 import std.array;
 import std.algorithm;
+import std.variant;
 import visitor;
 void printTree(ASTNode node, string indent = "")
 {
@@ -19,7 +20,7 @@ void printTree(ASTNode node, string indent = "")
 }
 abstract class ASTNode
 {
-    string[string] properties;
+    Variant[string] data;
     void accept(Visitor v);
 }
 abstract class ASTNonTerminal : ASTNode

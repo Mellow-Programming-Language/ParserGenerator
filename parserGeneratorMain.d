@@ -781,6 +781,7 @@ private:
             imports ~= `import std.string;` ~ "\n";
             imports ~= `import std.array;` ~ "\n";
             imports ~= `import std.algorithm;` ~ "\n";
+            imports ~= `import std.variant;` ~ "\n";
             imports ~= `import visitor;` ~ "\n";
             header = "";
             header ~= `class Parser` ~ "\n";
@@ -887,7 +888,7 @@ private:
             nodeClassDefinitions ~= `}` ~ "\n";
             nodeClassDefinitions ~= `abstract class ASTNode` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
-            nodeClassDefinitions ~= `    string[string] properties;` ~ "\n";
+            nodeClassDefinitions ~= `    Variant[string] data;` ~ "\n";
             nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
             nodeClassDefinitions ~= `abstract class ASTNonTerminal : ASTNode` ~ "\n";

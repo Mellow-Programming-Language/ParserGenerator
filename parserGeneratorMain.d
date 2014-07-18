@@ -1007,7 +1007,7 @@ private:
             }
             visitBoiler ~= `    void visit(ASTTerminal node)` ~ "\n";
             visitBoiler ~= `    {` ~ "\n";
-            visitBoiler ~= `        writeln(indent, "[", node.token, "]: ", node.index);` ~ "\n";
+            visitBoiler ~= `        writeln(indent, "[", node.token, "]: Line: [", node.data["LINE"].get!uint, "] Col: [", node.data["COLUMN"].get!uint, "]");` ~ "\n";
             visitBoiler ~= `    }` ~ "\n";
             visitBoiler ~= `}` ~ "\n";
             import std.file;

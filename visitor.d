@@ -268,6 +268,6 @@ class PrintVisitor : Visitor
     }
     void visit(ASTTerminal node)
     {
-        writeln(indent, "[", node.token, "]: ", node.index);
+        writeln(indent, "[", node.token, "]: Line: [", node.data["LINE"].get!uint, "] Col: [", node.data["COLUMN"].get!uint, "]");
     }
 }

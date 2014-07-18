@@ -1238,7 +1238,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1262,7 +1262,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1286,7 +1286,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1374,7 +1374,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1422,7 +1422,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1470,7 +1470,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);
@@ -1518,7 +1518,7 @@ private:
             {
                 debug (TRACE) writeln(traceIndent, "  Match: [", mat.captures[0], "]");
                 auto terminal = new ASTTerminal(mat.captures[0], index);
-                terminal.data["TOK_START"] = index;
+                terminal.data["TOK_BEGIN"] = index;
                 terminal.data["TOK_END"] = index + mat.captures[0].length;
                 terminal.data["LINE"] = getLineNumber(index);
                 terminal.data["COLUMN"] = getColumnNumber(index);

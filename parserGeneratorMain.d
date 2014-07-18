@@ -6,6 +6,12 @@ import std.string;
 import visitor;
 import grammarParserMain;
 
+// Inside ASTTerminal nodes, 'data' contains:
+//  "TOK_BEGIN": Absolute index into the input source that the token begins
+//  "TOK_END": Absolute index into the input source that the token ends
+//  "LINE": 1-indexed line number on which the token appears
+//  "column": 1-indexed column number on which the token appears
+
 string camel(string name)
 {
     return name[0..1].toLower ~ name[1..$];
@@ -562,6 +568,10 @@ class GenParser : Visitor
         if (status != NodeStatus.PRUNED)
         {
         terminalFunc ~= `                auto terminal = new ASTTerminal(mat.captures[0], index);` ~ "\n";
+        terminalFunc ~= `                terminal.data["TOK_BEGIN"] = index;` ~ "\n";
+        terminalFunc ~= `                terminal.data["TOK_END"] = index + mat.captures[0].length;` ~ "\n";
+        terminalFunc ~= `                terminal.data["LINE"] = getLineNumber(index);` ~ "\n";
+        terminalFunc ~= `                terminal.data["COLUMN"] = getColumnNumber(index);` ~ "\n";
         }
         terminalFunc ~= `                index += mat.captures[0].length;` ~ "\n";
         if (consume)
@@ -824,6 +834,22 @@ private:
             header ~= `                writeln(traceIndent, "Exiting: ", funcName, ", Index: ", index);` ~ "\n";
             header ~= `            }` ~ "\n";
             header ~= "            `;" ~ "\n";
+            header ~= `    }` ~ "\n";
+            header ~= `    private uint getLineNumber(const uint index) pure` ~ "\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        uint line = 1;` ~ "\n";
+            header ~= `        for (auto i = 0; i < source[0..index].length; i++)` ~ "\n";
+            header ~= `        {` ~ "\n";
+            header ~= `            if (source[i] == '\n')` ~ "\n";
+            header ~= `            {` ~ "\n";
+            header ~= `                line++;` ~ "\n";
+            header ~= `            }` ~ "\n";
+            header ~= `        }` ~ "\n";
+            header ~= `        return line;` ~ "\n";
+            header ~= `    }` ~ "\n";
+            header ~= `    private uint getColumnNumber(const uint index) pure` ~ "\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        return cast(uint)(index - source[0..index].lastIndexOf('\n'));` ~ "\n";
             header ~= `    }` ~ "\n";
 
             footer = "";

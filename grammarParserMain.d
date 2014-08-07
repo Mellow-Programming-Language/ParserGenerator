@@ -20,8 +20,12 @@ void printTree(ASTNode node, string indent = "")
 }
 abstract class ASTNode
 {
+    ASTNonTerminal parent;
     Variant[string] data;
     void accept(Visitor v);
+    void setParent(ASTNonTerminal node) {
+        parent = node;
+    }
 }
 abstract class ASTNonTerminal : ASTNode
 {
@@ -427,6 +431,7 @@ private:
         auto nonTerminal = new GrammarNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -531,6 +536,7 @@ private:
         auto nonTerminal = new RuleNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -567,6 +573,7 @@ private:
         auto nonTerminal = new PrunedElevatedNormalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -645,6 +652,7 @@ private:
         auto nonTerminal = new ParenNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -696,6 +704,7 @@ private:
         auto nonTerminal = new PrunedNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -747,6 +756,7 @@ private:
         auto nonTerminal = new ElevatedNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -775,6 +785,7 @@ private:
         auto nonTerminal = new NormalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -832,6 +843,7 @@ private:
         auto nonTerminal = new PrunedPlainNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -883,6 +895,7 @@ private:
         auto nonTerminal = new ElevatedPlainNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -911,6 +924,7 @@ private:
         auto nonTerminal = new OrChainNormalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -939,6 +953,7 @@ private:
         auto nonTerminal = new TerminalOrRulenameNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -975,6 +990,7 @@ private:
         auto nonTerminal = new PrunedElevatedForChainNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1007,6 +1023,7 @@ private:
         auto nonTerminal = new RuleSegmentNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1035,6 +1052,7 @@ private:
         auto nonTerminal = new RuleNameWithOpNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1063,6 +1081,7 @@ private:
         auto nonTerminal = new TerminalWithOpNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1091,6 +1110,7 @@ private:
         auto nonTerminal = new ParenWithOpNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1218,6 +1238,7 @@ private:
         auto nonTerminal = new OrChainNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1322,6 +1343,7 @@ private:
         auto nonTerminal = new UnaryOperatorNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1354,6 +1376,7 @@ private:
         auto nonTerminal = new TerminalNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1402,6 +1425,7 @@ private:
         auto nonTerminal = new TerminalLiteralNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1450,6 +1474,7 @@ private:
         auto nonTerminal = new TerminalLiteralNoConsumeNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1498,6 +1523,7 @@ private:
         auto nonTerminal = new TerminalRegexNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];
@@ -1546,6 +1572,7 @@ private:
         auto nonTerminal = new RuleNameNode();
         foreach (node; stack[$-collectedNodes..$])
         {
+            node.setParent(nonTerminal);
             nonTerminal.addChild(node);
         }
         stack = stack[0..$-collectedNodes];

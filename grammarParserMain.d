@@ -380,12 +380,12 @@ private:
             string funcName = __FUNCTION__;
             funcName =
                 funcName[__MODULE__.length + typeof(this).stringof.length + 2..$];
-            writeln(traceIndent, "Entered: ", funcName, ", Index: ", index);
+            writeln(traceIndent, "Entered: ", funcName, ", L: ", getLineNumber(index), ", C:", getColumnNumber(index));
             traceIndent ~= "  ";
             scope(exit)
             {
                 traceIndent = traceIndent[0..$-2];
-                writeln(traceIndent, "Exiting: ", funcName, ", Index: ", index);
+                writeln(traceIndent, "Exiting: ", funcName, ", L: ", getLineNumber(index), ", C:", getColumnNumber(index));
             }
             `;
     }

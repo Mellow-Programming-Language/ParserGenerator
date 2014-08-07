@@ -826,12 +826,12 @@ private:
             header ~= `            string funcName = __FUNCTION__;` ~ "\n";
             header ~= `            funcName =` ~ "\n";
             header ~= `                funcName[__MODULE__.length + typeof(this).stringof.length + 2..$];` ~ "\n";
-            header ~= `            writeln(traceIndent, "Entered: ", funcName, ", Index: ", index);` ~ "\n";
+            header ~= `            writeln(traceIndent, "Entered: ", funcName, ", L: ", getLineNumber(index), ", C:", getColumnNumber(index));` ~ "\n";
             header ~= `            traceIndent ~= "  ";` ~ "\n";
             header ~= `            scope(exit)` ~ "\n";
             header ~= `            {` ~ "\n";
             header ~= `                traceIndent = traceIndent[0..$-2];` ~ "\n";
-            header ~= `                writeln(traceIndent, "Exiting: ", funcName, ", Index: ", index);` ~ "\n";
+            header ~= `                writeln(traceIndent, "Exiting: ", funcName, ", L: ", getLineNumber(index), ", C:", getColumnNumber(index));` ~ "\n";
             header ~= `            }` ~ "\n";
             header ~= "            `;" ~ "\n";
             header ~= `    }` ~ "\n";
@@ -920,9 +920,13 @@ private:
             nodeClassDefinitions ~= `abstract class ASTNonTerminal : ASTNode` ~ "\n";
             nodeClassDefinitions ~= `{` ~ "\n";
             nodeClassDefinitions ~= `    ASTNode[] children;` ~ "\n";
+            nodeClassDefinitions ~= `    ASTNonTerminal parent;` ~ "\n";
             nodeClassDefinitions ~= `    string name;` ~ "\n";
             nodeClassDefinitions ~= `    void addChild(ASTNode node) {` ~ "\n";
             nodeClassDefinitions ~= `        children ~= node;` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `    void setParent(ASTNonTerminal node) {` ~ "\n";
+            nodeClassDefinitions ~= `        parent ~= node;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `    Tag getTag() {` ~ "\n";
             nodeClassDefinitions ~= `        return Tag.ASTNONTERMINAL;` ~ "\n";
@@ -1051,6 +1055,7 @@ private:
             footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";
             footer ~= `        {` ~ "\n";
+            footer ~= `            node.setParent(nonTerminal);` ~ "\n";
             footer ~= `            nonTerminal.addChild(node);` ~ "\n";
             footer ~= `        }` ~ "\n";
             footer ~= `        stack = stack[0..$-collectedNodes];` ~ "\n";

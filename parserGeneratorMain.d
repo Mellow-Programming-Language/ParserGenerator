@@ -152,6 +152,7 @@ class GenParser : Visitor
                 sequence ~= `        }` ~ "\n";
                 sequence ~= `        else` ~ "\n";
                 sequence ~= `        {` ~ "\n";
+                sequence ~= `            stack = stack[0..$-` ~ nodeCounter ~ `];` ~ "\n";
                 sequence ~= `            index = saveIndex;` ~ "\n";
                 sequence ~= `            return false;` ~ "\n";
                 sequence ~= `        }` ~ "\n";

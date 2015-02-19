@@ -918,6 +918,7 @@ private:
             nodeClassDefinitions ~= `    ASTNonTerminal parent;` ~ "\n";
             nodeClassDefinitions ~= `    Variant[string] data;` ~ "\n";
             nodeClassDefinitions ~= `    void accept(Visitor v);` ~ "\n";
+            nodeClassDefinitions ~= `    ASTNode treecopy();` ~ "\n";
             nodeClassDefinitions ~= `    void setParent(ASTNonTerminal node) {` ~ "\n";
             nodeClassDefinitions ~= `        parent = node;` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
@@ -944,6 +945,12 @@ private:
             nodeClassDefinitions ~= `    override void accept(Visitor v) {` ~ "\n";
             nodeClassDefinitions ~= `        v.visit(this);` ~ "\n";
             nodeClassDefinitions ~= `    }` ~ "\n";
+            nodeClassDefinitions ~= `    override ASTNode treecopy() {` ~ "\n";
+            nodeClassDefinitions ~= `        auto cpy = new ASTTerminal(this.token, this.index);` ~ "\n";
+            nodeClassDefinitions ~= `        cpy.parent = this.parent;` ~ "\n";
+            nodeClassDefinitions ~= `        cpy.data = this.data.dup;` ~ "\n";
+            nodeClassDefinitions ~= `        return cpy;` ~ "\n";
+            nodeClassDefinitions ~= `    }` ~ "\n";
             nodeClassDefinitions ~= `}` ~ "\n";
             string enumVals = `enum Tag {` ~ "\n";
             foreach (func; funcs)
@@ -960,6 +967,14 @@ private:
                 curDef ~= `    }` ~ "\n";
                 curDef ~= `    override Tag getTag() {` ~ "\n";
                 curDef ~= `        return Tag.` ~ func.ruleName.toUpper ~ `;` ~ "\n";
+                curDef ~= `    }` ~ "\n";
+                curDef ~= `    override ASTNode treecopy() {` ~ "\n";
+                curDef ~= `        auto cpy = new ` ~ func.ruleName ~ `Node();` ~ "\n";
+                curDef ~= `        cpy.children = this.children.map!(a => a.treecopy).array;` ~ "\n";
+                curDef ~= `        cpy.name = this.name;` ~ "\n";
+                curDef ~= `        cpy.parent = this.parent;` ~ "\n";
+                curDef ~= `        cpy.data = this.data.dup;` ~ "\n";
+                curDef ~= `        return cpy;` ~ "\n";
                 curDef ~= `    }` ~ "\n";
                 curDef ~= `}` ~ "\n";
                 nodeClassDefinitions ~= curDef;

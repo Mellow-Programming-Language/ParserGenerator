@@ -789,6 +789,7 @@ private:
             imports = "";
             imports ~= `import std.stdio;` ~ "\n";
             imports ~= `import std.regex;` ~ "\n";
+            imports ~= `import std.conv;` ~ "\n";
             imports ~= `import std.string;` ~ "\n";
             imports ~= `import std.array;` ~ "\n";
             imports ~= `import std.algorithm;` ~ "\n";

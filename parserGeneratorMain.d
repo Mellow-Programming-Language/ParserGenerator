@@ -1064,6 +1064,9 @@ private:
             header ~= `    bool ` ~ ruleName.camel ~ "()\n";
             header ~= `    {` ~ "\n";
             header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
+            header ~= `        ASTNode nonTerminal;` ~ "\n";
+            header ~= `        nonTerminal.data["LINE"] = getLineNumber(index);` ~ "\n";
+            header ~= `        nonTerminal.data["COLUMN"] = getColumnNumber(index);` ~ "\n";
             header ~= `        uint saveIndex = index;` ~ "\n";
             header ~= `        uint collectedNodes = 0;` ~ "\n";
 

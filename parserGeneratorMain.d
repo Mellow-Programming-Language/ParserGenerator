@@ -852,6 +852,19 @@ private:
             header ~= `    {` ~ "\n";
             header ~= `        return cast(uint)(index - source[0..index].lastIndexOf('\n'));` ~ "\n";
             header ~= `    }` ~ "\n";
+            header ~= `    string getStrLineNumber(ASTNode node)` ~ "\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        return node.data["LINE"].get!uint.to!string;` ~ "\n";
+            header ~= `    }` ~ "\n";
+            header ~= `    string getStrColumnNumber(ASTNode node)` ~ "\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        return node.data["COLUMN"].get!uint.to!string;` ~ "\n";
+            header ~= `    }` ~ "\n";
+            header ~= `    string errorHeader(ASTNode node)` ~ "\n";
+            header ~= `    {` ~ "\n";
+            header ~= `        return "Error: (L: " ~ node.getStrLineNumber` ~ "\n";
+            header ~= `            ~ " C: " ~ node.getStrColumnNumber ~ ")";` ~ "\n";
+            header ~= `    }` ~ "\n";
 
             footer = "";
             footer ~= `    void consumeWhitespace()` ~ "\n";

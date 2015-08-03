@@ -1070,7 +1070,7 @@ private:
             header ~= `        uint saveIndex = index;` ~ "\n";
             header ~= `        uint collectedNodes = 0;` ~ "\n";
 
-            footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
+            footer ~= `        nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";
             footer ~= `        {` ~ "\n";
             footer ~= `            node.setParent(nonTerminal);` ~ "\n";

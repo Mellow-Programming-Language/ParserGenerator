@@ -1064,13 +1064,14 @@ private:
             header ~= `    bool ` ~ ruleName.camel ~ "()\n";
             header ~= `    {` ~ "\n";
             header ~= `        debug (TRACE) mixin(tracer);` ~ "\n";
-            header ~= `        ASTNonTerminal nonTerminal;` ~ "\n";
-            header ~= `        nonTerminal.data["LINE"] = getLineNumber(index);` ~ "\n";
-            header ~= `        nonTerminal.data["COLUMN"] = getColumnNumber(index);` ~ "\n";
+            header ~= `        auto startLine = getLineNumber(index);` ~ "\n";
+            header ~= `        auto startCol = getColumnNumber(index);` ~ "\n";
             header ~= `        uint saveIndex = index;` ~ "\n";
             header ~= `        uint collectedNodes = 0;` ~ "\n";
 
-            footer ~= `        nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
+            footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
+            footer ~= `        nonTerminal.data["LINE"] = startLine;` ~ "\n";
+            footer ~= `        nonTerminal.data["COLUMN"] = startCol;` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";
             footer ~= `        {` ~ "\n";
             footer ~= `            node.setParent(nonTerminal);` ~ "\n";

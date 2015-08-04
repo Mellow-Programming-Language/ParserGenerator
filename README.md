@@ -2,7 +2,7 @@ To build the parser generator, exucute `make` in the toplevel project directory.
 A good example of the syntax used for grammar files is in the file
 `grammarMain.peg`, used to generate the parser generated and used by the parser
 generator to parse grammar files to generate parser generators. A better example
-can be seen in `lang.peg` of the project https://github.com/CollinReeser/clam .
+can be seen in `lang.peg` of the project https://github.com/Mellow-Programming-Language/Mellow .
 `./parserGenerator < lang.peg > parser.d` will produce a parser file `parser.d`,
 as well as a definitions file for the AST class hierarchy in `visitor.d`.
 

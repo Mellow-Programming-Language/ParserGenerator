@@ -806,8 +806,15 @@ private:
             header ~= `}` ~ "\n";
             header ~= `string errorHeader(ASTNode node)` ~ "\n";
             header ~= `{` ~ "\n";
-            header ~= `    return "Error: (L: " ~ node.getStrLineNumber` ~ "\n";
-            header ~= `        ~ " C: " ~ node.getStrColumnNumber ~ ")";` ~ "\n";
+            header ~= `     auto filename = node.data["FILE"].get!string;` ~ "\n";
+            header ~= `     if (filename != "")` ~ "\n";
+            header ~= `     {` ~ "\n";
+            header ~= `         return "Error in file [" ~ filename` ~ "\n";
+            header ~= `                                  ~ "]: (L: " ~ node.getStrLineNumber` ~ "\n";
+            header ~= `                                  ~ " C: " ~ node.getStrColumnNumber ~ ")";` ~ "\n";
+            header ~= `     }` ~ "\n";
+            header ~= `     return "Error: (L: " ~ node.getStrLineNumber` ~ "\n";
+            header ~= `         ~ " C: " ~ node.getStrColumnNumber ~ ")";` ~ "\n";
             header ~= `}` ~ "\n";
             header ~= `class Parser` ~ "\n";
             header ~= `{` ~ "\n";

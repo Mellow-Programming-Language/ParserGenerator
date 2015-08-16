@@ -811,9 +811,10 @@ private:
             header ~= `}` ~ "\n";
             header ~= `class Parser` ~ "\n";
             header ~= `{` ~ "\n";
-            header ~= `    this (string source)` ~ "\n";
+            header ~= `    this (string source, string filename = "")` ~ "\n";
             header ~= `    {` ~ "\n";
             header ~= `        this.source = source;` ~ "\n";
+            header ~= `        this.filename = filename;` ~ "\n";
             header ~= `        this.index = 0;` ~ "\n";
             header ~= `        debug(TRACE) this.traceIndent = "";` ~ "\n";
             header ~= `    }` ~ "\n";
@@ -831,6 +832,7 @@ private:
             header ~= `    }` ~ "\n";
             header ~= `private:` ~ "\n";
             header ~= `    string source;` ~ "\n";
+            header ~= `    string filename;` ~ "\n";
             header ~= `    uint index;` ~ "\n";
             header ~= `    ASTNode[] stack;` ~ "\n";
             header ~= `    debug (TRACE)` ~ "\n";
@@ -1084,6 +1086,7 @@ private:
             header ~= `        uint collectedNodes = 0;` ~ "\n";
 
             footer ~= `        auto nonTerminal = new ` ~ ruleName ~ `Node();` ~ "\n";
+            footer ~= `        nonTerminal.data["FILE"] = this.filename;` ~ "\n";
             footer ~= `        nonTerminal.data["LINE"] = startLine;` ~ "\n";
             footer ~= `        nonTerminal.data["COLUMN"] = startCol;` ~ "\n";
             footer ~= `        foreach (node; stack[$-collectedNodes..$])` ~ "\n";

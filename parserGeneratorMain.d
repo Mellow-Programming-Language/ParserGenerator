@@ -571,6 +571,7 @@ class GenParser : Visitor
         terminalFunc ~= `                auto terminal = new ASTTerminal(mat.captures[0], index);` ~ "\n";
         terminalFunc ~= `                terminal.data["TOK_BEGIN"] = index;` ~ "\n";
         terminalFunc ~= `                terminal.data["TOK_END"] = index + mat.captures[0].length;` ~ "\n";
+        terminalFunc ~= `                terminal.data["FILE"] = this.filename;` ~ "\n";
         terminalFunc ~= `                terminal.data["LINE"] = getLineNumber(index);` ~ "\n";
         terminalFunc ~= `                terminal.data["COLUMN"] = getColumnNumber(index);` ~ "\n";
         }
